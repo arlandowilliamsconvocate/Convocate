@@ -1,7 +1,8 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { AuthShell } from "~/components/auth-shell";
-import { Button, Field, Input } from "~/components/ui";
+import { PublicField, PublicInput, errorClass, formNoteClass } from "~/components/public-form";
+import { actionPrimary, linkInline } from "~/components/public-page";
 import { resetPasswordFn } from "~/server/api";
 
 /** The same rule the server enforces; the server is still the one that decides. */
@@ -96,18 +97,18 @@ function ResetPassword() {
         title="Your password has been changed"
         subtitle="Every other device that was signed in to this account has been signed out."
         footer={
-          <Link to="/signin" search={{ redirect: undefined }} className="font-medium text-brand underline">
+          <Link to="/signin" search={{ redirect: undefined }} className={linkInline}>
             Go to sign in
           </Link>
         }
       >
-        <p className="text-sm leading-relaxed text-ink">
+        <p className="text-[16px] leading-[1.75] text-charcoal">
           Use your new password the next time you sign in. The link in the email has been used and
           will not work again.
         </p>
         <Link
           to="/signin"
-          className="mt-5 inline-flex w-full items-center justify-center rounded-lg bg-brand px-3.5 py-2 text-sm font-medium text-white transition hover:bg-brand/90"
+          className={`${actionPrimary} mt-5 w-full`}
         >
           Sign in
         </Link>
@@ -121,22 +122,22 @@ function ResetPassword() {
         title="This link cannot be used"
         subtitle="Nothing has been changed. Your current password still works."
         footer={
-          <Link to="/signin" search={{ redirect: undefined }} className="font-medium text-brand underline">
+          <Link to="/signin" search={{ redirect: undefined }} className={linkInline}>
             Back to sign in
           </Link>
         }
       >
-        <p className="text-sm leading-relaxed text-ink">
+        <p className="text-[16px] leading-[1.75] text-charcoal">
           {error ??
             "This password reset link is no longer valid. It may have expired, already been used, or been replaced by a newer link."}
         </p>
         <Link
           to="/forgot-password"
-          className="mt-5 inline-flex w-full items-center justify-center rounded-lg bg-brand px-3.5 py-2 text-sm font-medium text-white transition hover:bg-brand/90"
+          className={`${actionPrimary} mt-5 w-full`}
         >
           Request a new link
         </Link>
-        <p className="mt-4 border-t border-line pt-4 text-xs leading-relaxed text-ink-soft">
+        <p className={`${formNoteClass} mt-6 border-t border-taupe/70 pt-6`}>
           Only the newest link works, and each one expires 60 minutes after it was asked for.
         </p>
       </AuthShell>
@@ -148,7 +149,7 @@ function ResetPassword() {
       title="Choose a new password"
       subtitle="Pick something you have not used here before, at least 8 characters long."
       footer={
-        <Link to="/signin" search={{ redirect: undefined }} className="font-medium text-brand underline">
+        <Link to="/signin" search={{ redirect: undefined }} className={linkInline}>
           Back to sign in
         </Link>
       }
@@ -161,11 +162,11 @@ function ResetPassword() {
       */}
       <form
         onSubmit={submit}
-        className="space-y-4"
+        className="space-y-6"
         {...({ referrerPolicy: "no-referrer" } as Record<string, string>)}
       >
-        <Field label="New password" hint="At least 8 characters.">
-          <Input
+        <PublicField label="New password" hint="At least 8 characters.">
+          <PublicInput
             type="password"
             autoComplete="new-password"
             required
@@ -177,9 +178,9 @@ function ResetPassword() {
             }}
             placeholder="••••••••"
           />
-        </Field>
-        <Field label="Confirm new password">
-          <Input
+        </PublicField>
+        <PublicField label="Confirm new password">
+          <PublicInput
             type="password"
             autoComplete="new-password"
             required
@@ -191,16 +192,18 @@ function ResetPassword() {
             }}
             placeholder="••••••••"
           />
-        </Field>
+        </PublicField>
         {confirm !== "" && password !== confirm ? (
-          <p className="text-xs leading-relaxed text-ink-soft">The two passwords do not match yet.</p>
+          <p className={formNoteClass}>The two passwords do not match yet.</p>
         ) : null}
         {error ? (
-          <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+          <p className={errorClass} role="alert">
+            {error}
+          </p>
         ) : null}
-        <Button type="submit" disabled={busy} className="w-full">
+        <button type="submit" disabled={busy} className={`${actionPrimary} w-full`}>
           {busy ? "Saving…" : "Save new password"}
-        </Button>
+        </button>
       </form>
     </AuthShell>
   );

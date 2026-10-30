@@ -1,6 +1,7 @@
 import { Link, createFileRoute, redirect, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { Button, Field, Input } from "~/components/ui";
+import { PublicField, PublicInput, errorClass, formNoteClass } from "~/components/public-form";
+import { actionPrimary, linkInline } from "~/components/public-page";
 import { AuthShell } from "~/components/auth-shell";
 import { getSessionUser, signUpFn } from "~/server/api";
 import { safeRedirect } from "./signin";
@@ -63,29 +64,29 @@ function SignUp() {
           <Link
             to="/signin"
             search={redirectTo ? { redirect: redirectTo } : {}}
-            className="font-medium text-brand underline"
+            className={linkInline}
           >
             Sign in
           </Link>
           {" · "}
-          <Link to="/forgot-password" className="font-medium text-brand underline">
+          <Link to="/forgot-password" className={linkInline}>
             Forgot your password?
           </Link>
         </>
       }
     >
-      <form onSubmit={submit} className="space-y-4">
-        <Field label="Your name">
-          <Input
+      <form onSubmit={submit} className="space-y-6">
+        <PublicField label="Your name">
+          <PublicInput
             autoComplete="name"
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Grace Okafor"
           />
-        </Field>
-        <Field label="Email">
-          <Input
+        </PublicField>
+        <PublicField label="Email">
+          <PublicInput
             type="email"
             autoComplete="email"
             required
@@ -93,9 +94,9 @@ function SignUp() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@yourorganization.org"
           />
-        </Field>
-        <Field label="Password" hint="At least 8 characters.">
-          <Input
+        </PublicField>
+        <PublicField label="Password" hint="At least 8 characters.">
+          <PublicInput
             type="password"
             autoComplete="new-password"
             required
@@ -104,16 +105,18 @@ function SignUp() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
           />
-        </Field>
+        </PublicField>
         {error ? (
-          <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+          <p className={errorClass} role="alert">
+            {error}
+          </p>
         ) : null}
-        <Button type="submit" disabled={busy} className="w-full">
+        <button type="submit" disabled={busy} className={`${actionPrimary} w-full`}>
           {busy ? "Creating account…" : "Create account"}
-        </Button>
-        <p className="text-center text-xs leading-relaxed text-ink-soft">
+        </button>
+        <p className={formNoteClass}>
           By creating an account you agree to our{" "}
-          <Link to="/privacy" className="font-medium text-brand underline">
+          <Link to="/privacy" className={linkInline}>
             Privacy Policy
           </Link>
           .
@@ -122,9 +125,9 @@ function SignUp() {
 
       {/* Nobody has to sign up to find out what this is: the worked example is
           one click from here, needs no account, and shows the whole thing. */}
-      <p className="mt-5 border-t border-line pt-4 text-center text-xs leading-relaxed text-ink-soft">
+      <p className={`${formNoteClass} mt-8 border-t border-taupe/70 pt-6`}>
         Not ready to start?{" "}
-        <Link to="/example" className="font-medium text-brand underline">
+        <Link to="/example" className={linkInline}>
           See a worked example
         </Link>{" "}
         — a full conference with invented figures. No account needed.

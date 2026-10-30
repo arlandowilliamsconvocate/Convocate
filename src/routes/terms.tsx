@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { SiteHeader } from "~/components/site-chrome";
+import { PageHead, PublicPage } from "~/components/public-page";
 
 /**
  * /terms — the agreement between an organizer and the person who operates
@@ -34,12 +34,22 @@ export const Route = createFileRoute("/terms")({
   component: Terms,
 });
 
-const bodyClass = "mt-3 text-base leading-relaxed text-ink-soft";
-const headingClass = "mt-10 text-2xl text-ink";
-const subHeadingClass = "mt-6 text-base font-semibold text-ink";
-const listClass = "mt-3 list-disc space-y-2 pl-5 text-base leading-relaxed text-ink-soft";
-const leadClass = "font-semibold text-ink";
-const mailClass = "font-medium text-brand underline";
+/*
+ * The document's typography, in one place: body copy at the site measure, a
+ * Fraunces section heading with a hairline rule above it, sub-headings as small
+ * caps labels, and links in terracotta ink. The wording below is untouched —
+ * this page is a legal document and only its presentation changed.
+ */
+const bodyClass = "mt-3 text-[16.5px] leading-[1.78] text-charcoal-soft";
+const headingClass =
+  "mt-12 border-t border-taupe/70 pt-8 font-display text-[1.4rem] font-normal leading-snug tracking-[-0.005em] text-charcoal";
+const subHeadingClass = "mt-8 text-[12px] uppercase tracking-[0.18em] text-charcoal";
+const listClass =
+  "mt-3 list-disc space-y-2.5 pl-5 text-[16.5px] leading-[1.78] text-charcoal-soft marker:text-terracotta/70";
+const leadClass = "font-medium text-charcoal";
+const mailClass =
+  "text-terracotta-ink underline decoration-terracotta/40 underline-offset-4 transition-colors hover:decoration-terracotta-ink";
+const introClass = "text-[17.5px] leading-[1.75] text-charcoal-soft";
 
 /** The address that actually reaches us, as a link, in the site's own style. */
 function Mail() {
@@ -61,15 +71,16 @@ function PrivacyLink() {
 
 function Terms() {
   return (
-    <div className="min-h-screen bg-paper">
-      <SiteHeader />
+    <PublicPage>
+      <PageHead
+        eyebrow="Terms"
+        title="Terms of Service"
+        meta={`Last updated: ${LAST_UPDATED}`}
+      />
 
-      <main className="mx-auto max-w-6xl px-6 pb-16 pt-14 sm:pt-20">
-        <article className="max-w-3xl">
-          <h1 className="text-4xl leading-[1.1] text-ink sm:text-5xl">Terms of Service</h1>
-          <p className="mt-4 text-sm text-ink-soft">Last updated: {LAST_UPDATED}</p>
-
-          <p className="mt-5 text-lg leading-relaxed text-ink-soft">
+      <div className="mx-auto max-w-[64ch] px-6 pb-24">
+        <article>
+          <p className={introClass}>
             Convocate is a planning workspace for conferences and events. It is operated by Arlando
             L. Williams II, an individual &mdash; not a company, and not a registered business
             entity. In these terms, &ldquo;Convocate&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo; and
@@ -516,7 +527,7 @@ function Terms() {
             </p>
           </section>
         </article>
-      </main>
-    </div>
+      </div>
+    </PublicPage>
   );
 }
