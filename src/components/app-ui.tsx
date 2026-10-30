@@ -252,8 +252,13 @@ export function Figure({
     tone === "over" ? "text-terracotta-ink" : tone === "muted" ? "text-charcoal-soft" : "text-charcoal";
   return (
     <div className="border-t border-taupe pt-3">
-      <p className="text-[10.5px] uppercase tracking-[0.18em] text-charcoal-soft">{label}</p>
-      <p className={`mt-1.5 font-display text-[1.35rem] leading-none tabular-nums ${valueTone}`}>
+      {/* Two lines' worth of room, always: "All entries · total" and "Signed
+          only · committed" wrap differently, and without this the figures under
+          them sat on different baselines. */}
+      <p className="min-h-[2.4rem] text-[10.5px] uppercase leading-[1.15] tracking-[0.18em] text-charcoal-soft">
+        {label}
+      </p>
+      <p className={`mt-1 font-display text-[1.35rem] leading-none tabular-nums ${valueTone}`}>
         {value}
       </p>
       {hint ? <p className="mt-1.5 text-[11.5px] leading-snug text-charcoal-soft">{hint}</p> : null}
@@ -322,10 +327,46 @@ export function EmptyState({
 
 /** The header row of a dense table: small caps, quiet, on the cream. */
 export const thClass =
-  "border-b border-taupe px-3 py-2 text-left text-[10px] font-normal uppercase tracking-[0.18em] text-charcoal-soft";
+  "border-b border-taupe px-2 py-2 text-left text-[10px] font-normal uppercase tracking-[0.18em] text-charcoal-soft sm:px-3";
 
 /** A body cell. Rows are separated by a hairline, never by a box. */
-export const tdClass = "px-3 py-2.5 align-top text-[13.5px] leading-snug text-charcoal";
+export const tdClass = "px-2 py-2 align-top text-[13.5px] leading-snug text-charcoal sm:px-3";
 
 /** A money cell: right-aligned, tabular, never wrapped. */
-export const moneyCell = "px-3 py-2.5 text-right align-top text-[13.5px] tabular-nums whitespace-nowrap";
+export const moneyCell =
+  "px-2 py-2 text-right align-top text-[13.5px] tabular-nums whitespace-nowrap sm:px-3";
+
+/**
+ * A row-level action (Edit, Delete). A table of forty lines is a reading
+ * surface, not a toolbar: boxed buttons here ate 44px of height per row and
+ * pushed forty lines onto three screens. These stay hit-safe (40px on a phone,
+ * 32px with a mouse) without drawing a box around themselves.
+ */
+export function RowAction({
+  children,
+  onClick,
+  disabled,
+  tone = "quiet",
+  className = "",
+}: {
+  children: ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
+  tone?: "quiet" | "danger";
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`inline-flex min-h-9 items-center px-1 text-[10px] uppercase tracking-[0.16em] transition-colors disabled:opacity-40 sm:min-h-8 ${
+        tone === "danger"
+          ? "text-terracotta-ink hover:text-charcoal"
+          : "text-charcoal-soft hover:text-charcoal"
+      } ${className}`}
+    >
+      {children}
+    </button>
+  );
+}
