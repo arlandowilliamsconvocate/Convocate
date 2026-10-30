@@ -4,6 +4,7 @@ import { SiteHeader } from "~/components/site-chrome";
 import { Button, Card, inputClass } from "~/components/ui";
 import {
   draftMessengerReplyFn,
+  getMessengerHealthFn,
   getMessengerSettingsFn,
   listMessengerInboxFn,
   sendMessengerReplyFn,
@@ -58,11 +59,12 @@ export const Route = createFileRoute("/admin_/messenger")({
     try {
       // Both reads are owner-gated on the server; either one refusing means the
       // caller is not the owner, and the answer is the site's own 404.
-      const [inbox, settings] = await Promise.all([
+      const [inbox, settings, health] = await Promise.all([
         listMessengerInboxFn(),
         getMessengerSettingsFn(),
+        getMessengerHealthFn(),
       ]);
-      return { ...inbox, settings: settings.settings };
+      return { ...inbox, settings: settings.settings, health: health.health };
     } catch {
       // Signed out, or signed in and not the owner. Both look exactly like a URL
       // that was never a page.
@@ -266,6 +268,112 @@ function MessengerInboxPage() {
               : `${counts.total} message${counts.total === 1 ? "" : "s"} stored · ${counts.unanswered} unanswered`}
           </p>
         </header>
+
+        <Card
+          className={`p-5 ${inbox.health.stale ? "border-red-300 bg-red-50" : ""}`}
+        >
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h2 className="text-lg text-ink">Is it answering?</h2>
+              <p className="mt-1 max-w-2xl text-sm text-ink-soft">
+                The watcher is what answers a direct message. If it stops, nothing answers — so
+                this panel says when it last finished a run, not just when it last tried.
+              </p>
+            </div>
+            <div className="flex flex-col items-start gap-2">
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                  inbox.health.stale ? "bg-red-600 text-white" : "bg-emerald-600 text-white"
+                }`}
+              >
+                {inbox.health.stale ? "Not answering" : "Answering"}
+              </span>
+              <Button type="button" variant="secondary" onClick={() => void router.invalidate()}>
+                Refresh
+              </Button>
+            </div>
+          </div>
+
+          {inbox.health.stale ? (
+            <p
+              role="alert"
+              className="mt-3 rounded-lg border border-red-300 bg-white px-3 py-2 text-sm text-red-800"
+            >
+              {inbox.health.lastOkAt === 0
+                ? "The watcher has never completed a run. Nothing will answer a direct message until it does."
+                : `The watcher has not completed a run for ${inbox.health.runAgo} — nothing is answering direct messages. Last run: ${formatStamp(inbox.health.lastOkAt)}.`}
+            </p>
+          ) : null}
+
+          <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
+                Watcher last ran
+              </dt>
+              <dd className={inbox.health.stale ? "font-semibold text-red-800" : "text-ink"}>
+                {inbox.health.lastOkAt === 0 ? "never" : `${inbox.health.runAgo} ago`}
+              </dd>
+              <dd className="text-xs text-ink-soft">{formatStamp(inbox.health.lastOkAt)}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
+                Last direct message
+              </dt>
+              <dd className="text-ink">
+                {inbox.health.lastInboundAt === 0 ? "never" : `${inbox.health.inboundAgo} ago`}
+              </dd>
+              <dd className="text-xs text-ink-soft">{formatStamp(inbox.health.lastInboundAt)}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
+                Last reply sent
+              </dt>
+              <dd className="text-ink">
+                {inbox.health.lastReplyAt === 0 ? "never" : `${inbox.health.replyAgo} ago`}
+              </dd>
+              <dd className="text-xs text-ink-soft">{formatStamp(inbox.health.lastReplyAt)}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
+                Waiting now
+              </dt>
+              <dd className={inbox.health.unanswered > 0 ? "font-semibold text-amber-800" : "text-ink"}>
+                {inbox.health.unanswered === 0
+                  ? "nothing"
+                  : `${inbox.health.unanswered} unanswered`}
+              </dd>
+              <dd className="text-xs text-ink-soft">
+                {inbox.health.unanswered === 0
+                  ? "no one is waiting"
+                  : `oldest waiting ${inbox.health.oldestWaitingAgo}`}
+              </dd>
+            </div>
+          </dl>
+
+          {inbox.health.windowClosed > 0 ? (
+            <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+              {inbox.health.windowClosed} message
+              {inbox.health.windowClosed === 1 ? "" : "s"} arrived more than 24 hours ago and were
+              never answered. Facebook will not let the Page send to those conversations now, so
+              they are listed below as left for a person. Anyone in that position has to write
+              again before they can be answered.
+            </p>
+          ) : null}
+
+          {inbox.health.lastError ? (
+            <p className="mt-3 text-xs text-ink-soft">
+              Last run error: {inbox.health.lastError} ({formatStamp(inbox.health.lastErrorAt)})
+            </p>
+          ) : null}
+          <p className="mt-3 text-xs text-ink-soft">
+            If the watcher goes quiet for ten minutes, or a message waits more than thirty minutes,
+            an email goes to {inbox.health.alertEmail} — once per incident, never with the words of
+            anyone&rsquo;s message.
+            {inbox.health.lastAlertAt > 0
+              ? ` Last alert: ${formatStamp(inbox.health.lastAlertAt)} (${inbox.health.lastAlertResult}).`
+              : ""}
+          </p>
+        </Card>
 
         <Card className="p-5">
           <div className="flex flex-wrap items-start justify-between gap-4">

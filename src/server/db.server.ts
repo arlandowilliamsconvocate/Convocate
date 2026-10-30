@@ -7496,6 +7496,126 @@ export const listSentRepliesInThread = async (input: {
   return rows.map((row) => (row.reply_text ?? "").trim()).filter((text) => text !== "");
 };
 
+/* ------------------------------------------------------- the watcher's health */
+
+/**
+ * The numbers the health panel and the dead-man's switch both read, in one query.
+ *
+ * Why one query: `/admin/messenger` is loaded by a person, and the alert check
+ * runs every minute. Five separate counts would be five round trips to a remote
+ * database for a screen that is only ever telling someone "fine" or "not fine".
+ *
+ * `unanswered` deliberately excludes rows already set aside for a person: those
+ * are a decision, not a backlog. `waitingOver30` is the subset of the backlog
+ * that has waited long enough to be an alert (see `MESSAGE_WAITING_ALERT_MS`).
+ * The Page is excluded everywhere, so an echo can never look like a customer.
+ */
+export const messengerHealthCounts = async (input: {
+  nowMs: number;
+  unansweredMs: number;
+  since: number;
+  pageId: string;
+}): Promise<{
+  lastInboundAt: number;
+  lastReplyAt: number;
+  unanswered: number;
+  waitingOver30: number;
+  oldestUnansweredAt: number;
+  windowClosed: number;
+}> => {
+  const row = await getDb()
+    .query<
+      {
+        last_inbound_at: number | null;
+        last_reply_at: number | null;
+        unanswered: number | null;
+        waiting_over: number | null;
+        oldest_unanswered_at: number | null;
+        window_closed: number | null;
+      },
+      [number, number, string]
+    >(
+      `SELECT
+         MAX(CASE WHEN received_at >= ? THEN received_at END) AS last_inbound_at,
+         MAX(replied_at) AS last_reply_at,
+         SUM(CASE WHEN replied_at IS NULL AND needs_human = 0 THEN 1 ELSE 0 END) AS unanswered,
+         SUM(CASE WHEN replied_at IS NULL AND needs_human = 0 AND received_at < ?
+                  THEN 1 ELSE 0 END) AS waiting_over,
+         MIN(CASE WHEN replied_at IS NULL AND needs_human = 0 THEN received_at END) AS oldest_unanswered_at,
+         SUM(CASE WHEN replied_at IS NULL AND needs_human_reason = 'window_closed'
+                  THEN 1 ELSE 0 END) AS window_closed
+       FROM messenger_messages
+        WHERE sender_id != ?`,
+    )
+    .get(input.since, input.nowMs - input.unansweredMs, input.pageId);
+  /* An empty table gives NULLs, not zeros: SUM over no rows is NULL. */
+  return {
+    lastInboundAt: Number(row?.last_inbound_at ?? 0),
+    lastReplyAt: Number(row?.last_reply_at ?? 0),
+    unanswered: Number(row?.unanswered ?? 0),
+    waitingOver30: Number(row?.waiting_over ?? 0),
+    oldestUnansweredAt: Number(row?.oldest_unanswered_at ?? 0),
+    windowClosed: Number(row?.window_closed ?? 0),
+  };
+};
+
+/**
+ * Rows a person has to deal with, for the alert email and for the panel.
+ *
+ * Two shapes, one function, because both callers want the same columns:
+ *   - `reason: ""` — unanswered and *not* set aside, older than `olderThan`.
+ *     This is the "somebody is waiting" list.
+ *   - `reason: "window_closed"` — set aside with that reason. This is the
+ *     "we can no longer answer this one" list.
+ *
+ * The WHERE clause is chosen here rather than by a parameter that switches
+ * behaviour inside the SQL: a `? = ''` trick reads as clever and breaks the
+ * moment somebody adds a parameter.
+ */
+export const messengerNeedsHumanRows = async (input: {
+  reason: string;
+  olderThan: number;
+  since: number;
+  pageId: string;
+  limit?: number;
+}): Promise<MessengerMessageRow[]> => {
+  const take = String(Math.max(1, Math.min(50, Math.trunc(input.limit ?? 20))));
+  const where =
+    input.reason === ""
+      ? "replied_at IS NULL AND needs_human = 0 AND received_at < ?"
+      : "replied_at IS NULL AND needs_human = 1 AND needs_human_reason = ?";
+  const rows = await getDb()
+    .query<MessengerMessageDbRow, [string, number, string | number]>(
+      `SELECT ${MESSENGER_COLUMNS} FROM messenger_messages
+        WHERE sender_id != ?
+          AND received_at >= ?
+          AND ${where}
+        ORDER BY received_at ASC, id ASC
+        LIMIT ${take}`,
+    )
+    .all(
+      input.pageId,
+      input.since,
+      input.reason === "" ? input.olderThan : input.reason,
+    );
+  return rows.map(toMessengerMessage);
+};
+
+/**
+ * Drop alert dedupe keys older than a cut-off.
+ *
+ * One key is written per incident so the owner is emailed once, not once a
+ * minute. Without this the key/value table would keep every id it ever reported;
+ * a month is long enough to recognise a repeat and short enough to stay small.
+ */
+export const pruneMessengerAlertKeys = async (before: number): Promise<void> => {
+  await getDb()
+    .query<unknown, [number]>(
+      `DELETE FROM messenger_settings WHERE key LIKE 'alert:%' AND updated_at < ?`,
+    )
+    .run(before);
+};
+
 /** The last time this sender wrote to us, in milliseconds (0 when never). */
 export const lastInboundFrom = async (senderId: string): Promise<number> => {
   const row = await getDb()

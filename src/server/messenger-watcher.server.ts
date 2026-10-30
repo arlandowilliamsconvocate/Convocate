@@ -69,6 +69,7 @@ import {
   markMessengerMessageReplied,
   releaseMessengerReplyClaim,
 } from "./db.server";
+import { recordHeartbeat } from "./messenger-health.server";
 import { recentThreadFor } from "./messenger-thread.server";
 import { isRepeatOfSentReply } from "./messenger-repeat.server";
 import {
@@ -165,7 +166,7 @@ const emptyOutcome = (input: {
  * cron job that gets a stack trace learns nothing and a run that dies halfway
  * leaves the claim behind (the TTL handles that, but a clean return is better).
  */
-export const runMessengerWatcher = async (nowMs: number = Date.now()): Promise<WatcherOutcome> => {
+const runWatcherOnce = async (nowMs: number): Promise<WatcherOutcome> => {
   const gate = await autoReplyEnabled();
   const outcome = emptyOutcome(gate);
   if (!gate.enabled) return outcome;
@@ -367,4 +368,35 @@ export const runMessengerWatcher = async (nowMs: number = Date.now()): Promise<W
     await recordCheck(nowMs).catch(() => undefined);
   }
   return outcome;
+};
+
+/**
+ * Answer whatever is waiting, and say so.
+ *
+ * The work is `runWatcherOnce`; this wrapper exists for one reason — the
+ * heartbeat. Every run that finishes, including a run that found nothing, writes
+ * `heartbeat_last_ok_at`, and that stamp is the whole dead-man's switch: the
+ * owner's complaint was silence, and silence is only detectable if something
+ * records that it was alive. See `messenger-health.server.ts`.
+ *
+ * A run that could not read the Page credentials is recorded as a failure, not a
+ * success: the process is alive but nothing can be answered, which is exactly
+ * the state the alert is for.
+ */
+export const runMessengerWatcher = async (nowMs: number = Date.now()): Promise<WatcherOutcome> => {
+  try {
+    const outcome = await runWatcherOnce(nowMs);
+    const blind = outcome.errors.includes("credentials_unavailable");
+    await recordHeartbeat({
+      at: nowMs,
+      ok: !blind,
+      error: blind ? "credentials_unavailable" : outcome.errors[0],
+    }).catch(() => undefined);
+    return outcome;
+  } catch (cause) {
+    await recordHeartbeat({ at: nowMs, ok: false, error: "watcher_threw" }).catch(
+      () => undefined,
+    );
+    throw cause;
+  }
 };

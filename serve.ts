@@ -77,4 +77,40 @@ const bindRetryingRace = async (): Promise<void> => {
 
 await bindRetryingRace();
 
+/**
+ * Start the Messenger watcher loop.
+ *
+ * The owner's complaint on 2026-10-30 was that the Page went silent: a direct
+ * message arrived on 27 October and nothing answered it, because the one process
+ * that calls the watcher lived outside the app and nothing restarted it when the
+ * machine was replaced. This box has no cron, no systemd unit and no rc.local —
+ * but the platform always starts this server, so this is the one hook that is
+ * actually guaranteed. Starting the loop here means a restart of the site is a
+ * restart of the responder.
+ *
+ * Three rules, because this must never be able to take the site down:
+ *   - it runs *after* the port is bound, so a failure here cannot stop the site;
+ *   - it is wrapped, and a missing script is not an error;
+ *   - the script holds a pid file, so starting it twice is a no-op (the platform
+ *     restarts this server on every publish).
+ */
+const SCHEDULER_SCRIPT = "/home/team/shared/convocate-scheduler.sh";
+try {
+  if (await Bun.file(SCHEDULER_SCRIPT).exists()) {
+    const scheduler = Bun.spawn(["bash", SCHEDULER_SCRIPT], {
+      stdin: "ignore",
+      stdout: "ignore",
+      stderr: "ignore",
+      env: process.env,
+    });
+    /* Unref: the loop must outlive this server process, not die with it. */
+    scheduler.unref();
+    console.log(`[convocate] messenger scheduler started from ${SCHEDULER_SCRIPT}`);
+  } else {
+    console.log(`[convocate] messenger scheduler not found at ${SCHEDULER_SCRIPT} — nothing is answering DMs`);
+  }
+} catch (cause) {
+  console.error("[convocate] could not start the messenger scheduler", cause);
+}
+
 console.log(`team-site serving on http://${HOST}:${String(PORT)}`);
