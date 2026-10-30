@@ -29,6 +29,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { createFileRoute } from "@tanstack/react-router";
 import { runMessengerWatcher } from "~/server/messenger-watcher.server";
+import { runMessengerHealthChecks } from "~/server/messenger-health.server";
 import { watcherSecret } from "~/server/messenger-settings.server";
 
 /** The header the cron script presents. */
@@ -81,7 +82,16 @@ export const Route = createFileRoute("/api/meta/messenger-watcher")({
         }
         try {
           const outcome = await runMessengerWatcher();
-          return json(200, outcome);
+          /* The dead-man's switch rides on the same tick: a message waiting too
+             long, a run that has gone stale, or a message that fell past Meta's
+             24-hour window all become one email to the owner instead of a quiet
+             row. It never throws and never blocks the answer. */
+          const health = await runMessengerHealthChecks().catch(() => ({
+            alerted: [] as string[],
+            skipped: [] as string[],
+            errors: ["health_check_failed"] as string[],
+          }));
+          return json(200, { ...outcome, alerts: health.alerted, healthErrors: health.errors });
         } catch (cause) {
           // The watcher is written not to throw; this is the belt.
           console.error("[convocate] messenger watcher failed", cause);

@@ -27,6 +27,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { currentUser } from "./auth.server";
 import {
+  describeGap,
+  readMessengerHealth,
+  type MessengerHealth,
+} from "./messenger-health.server";
+import {
   isAdminUser,
   listMessengerMessages,
   messengerMessageCounts,
@@ -258,3 +263,49 @@ export const setMessengerVoiceFn = createServerFn({ method: "POST" })
     await Promise.all([setSystemPrompt(data.systemPrompt), setModel(data.model)]);
     return { ok: true as const, settings: await readMessengerSettingsForScreen() };
   });
+
+/**
+ * The health of the responder, for `/admin/messenger` — owner only.
+ *
+ * The owner's complaint was that the Page went quiet without anybody noticing.
+ * `lastCheckAt` already existed on the screen, but "last checked 3 days ago"
+ * printed in the same grey as "last checked a minute ago", so it read as fine.
+ * This returns the same facts in a shape the screen can judge: whether the
+ * watcher is stale, how long ago it last completed a run, and how long the oldest
+ * waiting message has waited.
+ *
+ * The relative phrases are built **here, on the server**, and not in the browser.
+ * A component that computes "3 minutes ago" while rendering produces one string
+ * on the server and a different one a second later in the browser, and React
+ * fails the hydration. Sending the phrase removes the possibility.
+ */
+export type MessengerHealthView = MessengerHealth & {
+  /** "2 minutes" — how long since a run completed. */
+  runAgo: string;
+  /** "4 hours" — since the newest inbound message. */
+  inboundAgo: string;
+  /** "4 hours" — since the newest reply we recorded sending. */
+  replyAgo: string;
+  /** "9 days" — how long the oldest waiting message has waited. */
+  oldestWaitingAgo: string;
+};
+
+export const getMessengerHealthFn = createServerFn({ method: "GET" }).handler(
+  async (): Promise<{ ok: true; health: MessengerHealthView }> => {
+    await requireOwner();
+    const health = await readMessengerHealth();
+    return {
+      ok: true as const,
+      health: {
+        ...health,
+        runAgo: health.lastOkAt === 0 ? "never" : describeGap(health.staleMs),
+        inboundAgo: health.lastInboundAt === 0 ? "never" : describeGap(health.now - health.lastInboundAt),
+        replyAgo: health.lastReplyAt === 0 ? "never" : describeGap(health.now - health.lastReplyAt),
+        oldestWaitingAgo:
+          health.oldestUnansweredAt === 0
+            ? "nothing waiting"
+            : describeGap(health.now - health.oldestUnansweredAt),
+      },
+    };
+  },
+);
