@@ -1,6 +1,22 @@
 @import "tailwindcss";
 
+/*
+ * Faces, self-hosted from the fontsource packages in package.json rather than a
+ * third-party CDN: nothing to block, nothing to leak, and the woff2 files are
+ * hashed into /assets on build. Only the `wght` axis files are imported — the
+ * pages use regular and medium weights, never italic display text — and every
+ * file carries a unicode-range, so a browser fetches the latin subset alone.
+ *
+ * Fallbacks are metric-adjacent (Palatino/Georgia for the serif, the system UI
+ * sans for the body) and both faces use `font-display: swap`, so text paints on
+ * the first frame instead of waiting on the network.
+ */
+@import "@fontsource-variable/fraunces/wght.css";
+@import "@fontsource-variable/instrument-sans/wght.css";
+
 @theme {
+  /* The original product palette — unchanged, because every app screen, form
+     and printed document is built on these names. */
   --color-paper: #faf8f4;
   --color-paper-deep: #f3efe7;
   --color-ink: #1e1b16;
@@ -10,6 +26,27 @@
   --color-brass: #96682d;
   --color-line: #e3ddd2;
   --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+
+  /* The warm editorial palette the public pages are art-directed in: paper
+     cream, charcoal ink, a hairline taupe rule, a muted terracotta and a muted
+     sage. `-ink` variants exist for the two accents because the decorative
+     shades fail AA as body text on cream — terracotta #B4643F is 4.1:1, which
+     is fine for a rule or an icon and not for a sentence. */
+  --color-cream: #fbf7f0;
+  --color-cream-deep: #f5eee2;
+  --color-charcoal: #2b2724;
+  --color-charcoal-soft: #5e564e;
+  --color-taupe: #ded3c4;
+  --color-terracotta: #b4643f;
+  --color-terracotta-ink: #8a4a2a;
+  --color-sage: #7f8f79;
+  --color-sage-ink: #55654f;
+
+  /* Fraunces for headings on the public pages, Instrument Sans for body and UI. */
+  --font-display: "Fraunces Variable", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-sans:
+    "Instrument Sans Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, Arial,
+    sans-serif;
 }
 
 @layer base {
@@ -21,6 +58,58 @@
   h2,
   h3 {
     @apply font-serif tracking-tight;
+  }
+  /*
+   * Focus: every interactive element gets the same visible ring, on cream, on
+   * charcoal and on a photograph. It is drawn outside the element so it never
+   * eats into a thin 1px border, and the colour is the terracotta with enough
+   * weight to be obvious against both backgrounds.
+   */
+  :focus-visible {
+    outline: 2px solid var(--color-terracotta);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  ::selection {
+    background: #e8d7c6;
+    color: var(--color-charcoal);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/*
+ * A sheet of paper, not a screen: 3% greyscale turbulence over the cream base so
+ * a large empty area does not read as flat digital #FFF. Multiply keeps it from
+ * greying the page out, and it is painted by a pseudo-element that ignores the
+ * pointer, so nothing underneath becomes unclickable.
+ */
+.paper-grain {
+  position: relative;
+}
+.paper-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.035;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='220' height='220' filter='url(%23g)'/></svg>");
+  background-repeat: repeat;
+  background-size: 220px 220px;
+}
+@media print {
+  .paper-grain::after {
+    display: none;
   }
 }
 /*
