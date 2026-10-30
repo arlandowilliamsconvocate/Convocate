@@ -1,7 +1,8 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { AuthShell } from "~/components/auth-shell";
-import { Button, Field, Input } from "~/components/ui";
+import { PublicField, PublicInput, errorClass, formNoteClass } from "~/components/public-form";
+import { actionPrimary, linkInline } from "~/components/public-page";
 import { requestPasswordResetFn } from "~/server/api";
 
 export const Route = createFileRoute("/forgot-password")({
@@ -45,17 +46,17 @@ function ForgotPassword() {
         title="Check your email"
         subtitle="One more step, and you are back in."
         footer={
-          <Link to="/signin" search={{ redirect: undefined }} className="font-medium text-brand underline">
+          <Link to="/signin" search={{ redirect: undefined }} className={linkInline}>
             Back to sign in
           </Link>
         }
       >
-        <p className="text-sm leading-relaxed text-ink">{answer}</p>
-        <p className="mt-3 text-sm leading-relaxed text-ink-soft">
+        <p className="text-[16px] leading-[1.75] text-charcoal">{answer}</p>
+        <p className="mt-3 text-[16px] leading-[1.75] text-charcoal-soft">
           Nothing has changed yet — your current password still works until you open the link and
           choose a new one.
         </p>
-        <p className="mt-4 border-t border-line pt-4 text-xs leading-relaxed text-ink-soft">
+        <p className={`${formNoteClass} mt-6 border-t border-taupe/70 pt-6`}>
           Nothing arrived? Wait a minute, check the spam folder, and then ask for another link. Only
           the newest link works.
         </p>
@@ -70,15 +71,15 @@ function ForgotPassword() {
       footer={
         <>
           Remembered it?{" "}
-          <Link to="/signin" search={{ redirect: undefined }} className="font-medium text-brand underline">
+          <Link to="/signin" search={{ redirect: undefined }} className={linkInline}>
             Sign in
           </Link>
         </>
       }
     >
-      <form onSubmit={submit} className="space-y-4">
-        <Field label="Email">
-          <Input
+      <form onSubmit={submit} className="space-y-6">
+        <PublicField label="Email">
+          <PublicInput
             type="email"
             autoComplete="email"
             required
@@ -86,14 +87,16 @@ function ForgotPassword() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@yourorganization.org"
           />
-        </Field>
+        </PublicField>
         {error ? (
-          <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+          <p className={errorClass} role="alert">
+            {error}
+          </p>
         ) : null}
-        <Button type="submit" disabled={busy} className="w-full">
+        <button type="submit" disabled={busy} className={`${actionPrimary} w-full`}>
           {busy ? "Sending…" : "Send me a reset link"}
-        </Button>
-        <p className="text-center text-xs leading-relaxed text-ink-soft">
+        </button>
+        <p className={formNoteClass}>
           The link works once and expires in 60 minutes.
         </p>
       </form>

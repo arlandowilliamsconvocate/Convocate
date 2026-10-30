@@ -1,6 +1,7 @@
 import { Link, createFileRoute, redirect, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { Button, Field, Input } from "~/components/ui";
+import { PublicField, PublicInput, errorClass, formNoteClass } from "~/components/public-form";
+import { actionPrimary, linkInline } from "~/components/public-page";
 import { AuthShell } from "~/components/auth-shell";
 import { getSessionUser, signInFn } from "~/server/api";
 
@@ -67,16 +68,16 @@ function SignIn() {
           <Link
             to="/signup"
             search={redirectTo ? { redirect: redirectTo } : {}}
-            className="font-medium text-brand underline"
+            className={linkInline}
           >
             Create an account
           </Link>
         </>
       }
     >
-      <form onSubmit={submit} className="space-y-4">
-        <Field label="Email">
-          <Input
+      <form onSubmit={submit} className="space-y-6">
+        <PublicField label="Email">
+          <PublicInput
             type="email"
             autoComplete="email"
             required
@@ -84,9 +85,9 @@ function SignIn() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@yourorganization.org"
           />
-        </Field>
-        <Field label="Password">
-          <Input
+        </PublicField>
+        <PublicField label="Password">
+          <PublicInput
             type="password"
             autoComplete="current-password"
             required
@@ -94,15 +95,17 @@ function SignIn() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
           />
-        </Field>
+        </PublicField>
         {error ? (
-          <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+          <p className={errorClass} role="alert">
+            {error}
+          </p>
         ) : null}
-        <Button type="submit" disabled={busy} className="w-full">
+        <button type="submit" disabled={busy} className={`${actionPrimary} w-full`}>
           {busy ? "Signing in…" : "Sign in"}
-        </Button>
-        <p className="text-center text-xs leading-relaxed text-ink-soft">
-          <Link to="/forgot-password" className="font-medium text-brand underline">
+        </button>
+        <p className={formNoteClass}>
+          <Link to="/forgot-password" className={linkInline}>
             Forgot your password?
           </Link>
         </p>
