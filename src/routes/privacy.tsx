@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { SiteHeader } from "~/components/site-chrome";
+import { PageHead, PublicPage } from "~/components/public-page";
 
 /**
  * /privacy — what Convocate actually does with an organizer's data.
@@ -29,29 +29,38 @@ export const Route = createFileRoute("/privacy")({
   component: Privacy,
 });
 
-const bodyClass = "mt-3 text-base leading-relaxed text-ink-soft";
-const headingClass = "mt-10 text-2xl text-ink";
-const subHeadingClass = "mt-6 text-base font-semibold text-ink";
-const listClass = "mt-3 list-disc space-y-2 pl-5 text-base leading-relaxed text-ink-soft";
+/*
+ * The document's typography, in one place: body copy at the site measure, a
+ * Fraunces section heading with a hairline rule above it, sub-headings as small
+ * caps labels, and links in terracotta ink. The wording below is untouched —
+ * this page is a statement of what the product does and only its presentation
+ * changed.
+ */
+const bodyClass = "mt-3 text-[16.5px] leading-[1.78] text-charcoal-soft";
+const headingClass =
+  "mt-12 border-t border-taupe/70 pt-8 font-display text-[1.4rem] font-normal leading-snug tracking-[-0.005em] text-charcoal";
+const subHeadingClass = "mt-8 text-[12px] uppercase tracking-[0.18em] text-charcoal";
+const listClass =
+  "mt-3 list-disc space-y-2.5 pl-5 text-[16.5px] leading-[1.78] text-charcoal-soft marker:text-terracotta/70";
+const introClass = "text-[17.5px] leading-[1.75] text-charcoal-soft";
+const linkClass =
+  "text-terracotta-ink underline decoration-terracotta/40 underline-offset-4 transition-colors hover:decoration-terracotta-ink";
 
 function Privacy() {
   return (
-    <div className="min-h-screen bg-paper">
-      <SiteHeader />
+    <PublicPage>
+      <PageHead eyebrow="Privacy" title="Privacy Policy" meta={`Last updated ${LAST_UPDATED}`} />
 
-      <main className="mx-auto max-w-6xl px-6 pb-16 pt-14 sm:pt-20">
-        <article className="max-w-3xl">
-          <h1 className="text-4xl leading-[1.1] text-ink sm:text-5xl">Privacy Policy</h1>
-          <p className="mt-4 text-sm text-ink-soft">Last updated {LAST_UPDATED}</p>
-
-          <p className="mt-5 text-lg leading-relaxed text-ink-soft">
+      <div className="mx-auto max-w-[64ch] px-6 pb-24">
+        <article>
+          <p className={introClass}>
             This page says what Convocate collects, why we collect it, who can see it, and how to
             ask us to remove it. It is written to be read once, in plain language.
           </p>
 
-          <p className="mt-3 text-base leading-relaxed text-ink-soft">
+          <p className={bodyClass}>
             This page goes together with our{" "}
-            <Link to="/terms" className="font-medium text-brand underline">
+            <Link to="/terms" className={linkClass}>
               Terms of Service
             </Link>
             , which cover the agreement between you and us &mdash; the $199 unlock, refunds,
@@ -65,7 +74,7 @@ function Privacy() {
               Convocate is a planning workspace for conferences and events. It holds the budget, the
               contracts, the documents and the registration for an event in one place. If you have a
               question about anything on this page, email{" "}
-              <a href="mailto:hello@mail.getconvocate.com" className="font-medium text-brand underline">
+              <a href="mailto:hello@mail.getconvocate.com" className={linkClass}>
                 hello@mail.getconvocate.com
               </a>
               .
@@ -153,7 +162,7 @@ function Privacy() {
               can leave the list at any time with one click, using the link in any message we send,
               and we never sell or share the address. To have an address
               deleted rather than just unsubscribed, email{" "}
-              <a href="mailto:hello@mail.getconvocate.com" className="font-medium text-brand underline">
+              <a href="mailto:hello@mail.getconvocate.com" className={linkClass}>
                 hello@mail.getconvocate.com
               </a>{" "}
               and we will delete the row.
@@ -209,7 +218,7 @@ function Privacy() {
               Facebook itself is run by Meta, which handles what happens on Facebook under{" "}
               <a
                 href="https://www.facebook.com/privacy/policy"
-                className="font-medium text-brand underline"
+                className={linkClass}
               >
                 its own privacy policy
               </a>
@@ -280,7 +289,7 @@ function Privacy() {
               If you ask within 48 hours of the card being charged — counted from the charge — you
               get a full refund, no questions asked, and the event returns to the free plan with its
               data kept. After 48 hours, requests are handled case by case. Ask by emailing{" "}
-              <a href="mailto:hello@mail.getconvocate.com" className="font-medium text-brand underline">
+              <a href="mailto:hello@mail.getconvocate.com" className={linkClass}>
                 hello@mail.getconvocate.com
               </a>
               .
@@ -300,7 +309,7 @@ function Privacy() {
             <h2 className={headingClass}>Your choices</h2>
             <p className={bodyClass}>
               Ask us at{" "}
-              <a href="mailto:hello@mail.getconvocate.com" className="font-medium text-brand underline">
+              <a href="mailto:hello@mail.getconvocate.com" className={linkClass}>
                 hello@mail.getconvocate.com
               </a>{" "}
               for a copy of your data, a correction, or deletion. You can also remove an uploaded
@@ -325,7 +334,7 @@ function Privacy() {
             </p>
           </section>
         </article>
-      </main>
-    </div>
+      </div>
+    </PublicPage>
   );
 }

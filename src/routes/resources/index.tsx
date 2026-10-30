@@ -1,5 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { SiteHeader } from "~/components/site-chrome";
+import { PublicPage, PageHead, SectionHead, FRAME, actionPrimary, actionSecondary, linkInline } from "~/components/public-page";
 import { LEAD_MAGNETS, SITE_ORIGIN, leadMagnetPath, type LeadMagnet } from "~/lib/lead-magnets";
 
 /**
@@ -20,6 +20,12 @@ import { LEAD_MAGNETS, SITE_ORIGIN, leadMagnetPath, type LeadMagnet } from "~/li
  * because a reader wants to know how much there is before they start. That means
  * the numbers have to be updated when a guide is added or one moves between the
  * two halves — the cards themselves never need it.
+ *
+ * Presentation: a guide is a hairline-separated row, not a boxed card — a rule
+ * above it, the access label in small caps, the title in Fraunces, the promise
+ * in body type, and one thin outlined action. The paid half sits on the
+ * deep-cream band so the two halves read as two sections rather than one long
+ * list.
  */
 export const Route = createFileRoute("/resources/")({
   head: () => ({
@@ -36,23 +42,18 @@ export const Route = createFileRoute("/resources/")({
   component: Resources,
 });
 
-function GuideCard({ magnet }: { magnet: LeadMagnet }) {
+function GuideRow({ magnet }: { magnet: LeadMagnet }) {
   const free = magnet.access === "free";
   return (
-    <li className="flex flex-col rounded-xl border border-line bg-white p-6 shadow-sm">
-      <p className="text-xs uppercase tracking-[0.18em] text-ink-soft">
-        {free ? "Free to read in full" : "Part of the $199 plan"}
-      </p>
-      <h3 className="mt-2 font-serif text-xl leading-snug text-ink">{magnet.title}</h3>
-      <p className="mt-3 flex-1 text-sm leading-relaxed text-ink-soft">{magnet.promise}</p>
-      <p className="mt-5">
+    <li className="flex flex-col border-t border-taupe/80 pb-10 pt-7">
+      <h3 className="font-display text-balance text-[1.3rem] font-normal leading-snug text-charcoal">
+        {magnet.title}
+      </h3>
+      <p className="mt-3 flex-1 text-[15.5px] leading-[1.75] text-charcoal-soft">{magnet.promise}</p>
+      <p className="mt-6">
         <Link
           to={leadMagnetPath(magnet.slug)}
-          className={
-            free
-              ? "inline-flex items-center rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand/90"
-              : "inline-flex items-center rounded-lg border border-line bg-white px-4 py-2 text-sm font-semibold text-ink shadow-sm hover:bg-paper-deep"
-          }
+          className={free ? actionPrimary : actionSecondary}
         >
           {free ? magnet.buttonLabel : "Read the opening section"}
         </Link>
@@ -61,63 +62,69 @@ function GuideCard({ magnet }: { magnet: LeadMagnet }) {
   );
 }
 
+/** Two columns of hairline rows from `sm` up; one column on a phone. */
+const guideGrid = "mt-12 grid gap-x-12 sm:grid-cols-2";
+
 function Resources() {
   const free = LEAD_MAGNETS.filter((magnet) => magnet.access === "free");
   const paid = LEAD_MAGNETS.filter((magnet) => magnet.access === "paid");
   return (
-    <div className="min-h-screen bg-paper">
-      <SiteHeader />
-      <main className="mx-auto max-w-6xl px-6 pb-20 pt-14 sm:pt-20">
-        <div className="max-w-3xl">
-          <h1 className="text-4xl leading-[1.1] text-ink sm:text-5xl">
-            Guides for the person who runs the conference
-          </h1>
-          <p className="mt-5 text-lg leading-relaxed text-ink-soft">
+    <PublicPage>
+      <PageHead
+        eyebrow="Resources"
+        title="Guides for the person who runs the conference"
+        lede={
+          <>
             Ten working documents for whoever owns the money and the contracts for an event. Two
             are free to read by anyone — the conference budget template and the conference day
-            timeline — each on its own page in full; printing either one asks for an email
-            address. The other eight are part of the $199 plan on an event.
-          </p>
-        </div>
+            timeline — each on its own page in full; printing either one asks for an email address.
+            The other eight are part of the $199 plan on an event.
+          </>
+        }
+      />
 
-        <section className="mt-12">
-          <h2 className="font-serif text-2xl text-ink">Free to read in full</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink-soft">
-            Both guides are on their own page in full, nothing is held back, and there is no email
-            address needed to read either one. Both also have a printable one-page sheet; that
-            sheet asks for an address, the reading never does.
-          </p>
-          <ul className="mt-6 grid gap-5 sm:grid-cols-2">
+      <div className={`${FRAME} pb-20 md:pb-24`}>
+        <section aria-labelledby="free-guides">
+          <SectionHead
+            id="free-guides"
+            title="Free to read in full"
+            lede="Both guides are on their own page in full, nothing is held back, and there is no email address needed to read either one. Both also have a printable one-page sheet; that sheet asks for an address, the reading never does."
+          />
+          <ul className={guideGrid}>
             {free.map((magnet) => (
-              <GuideCard key={magnet.slug} magnet={magnet} />
+              <GuideRow key={magnet.slug} magnet={magnet} />
             ))}
           </ul>
         </section>
+      </div>
 
-        <section className="mt-14">
-          <h2 className="font-serif text-2xl text-ink">Part of the $199 plan</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink-soft">
-            These eight come with the $199 event plan. Each page opens with a real section of the
-            guide so you can see what you are getting, and the whole thing opens once an event on
-            your account is unlocked. There is a free plan as well — one event, the account owner
-            alone, and one budget line.
-          </p>
-          <ul className="mt-6 grid gap-5 sm:grid-cols-2">
-            {paid.map((magnet) => (
-              <GuideCard key={magnet.slug} magnet={magnet} />
-            ))}
-          </ul>
-        </section>
+      <div className="border-y border-taupe/70 bg-cream-deep py-20 md:py-24">
+        <div className={FRAME}>
+          <section aria-labelledby="paid-guides">
+            <SectionHead
+              id="paid-guides"
+              title="Part of the $199 plan"
+              lede="These eight come with the $199 event plan. Each page opens with a real section of the guide so you can see what you are getting, and the whole thing opens once an event on your account is unlocked. There is a free plan as well — one event, the account owner alone, and one budget line."
+            />
+            <ul className={guideGrid}>
+              {paid.map((magnet) => (
+                <GuideRow key={magnet.slug} magnet={magnet} />
+              ))}
+            </ul>
+          </section>
+        </div>
+      </div>
 
-        <p className="mt-12 max-w-3xl text-sm leading-relaxed text-ink-soft">
+      <div className={`${FRAME} pb-24`}>
+        <p className="mx-auto mt-16 max-w-[62ch] border-t border-taupe/80 pt-8 text-center text-[15.5px] leading-[1.8] text-charcoal-soft">
           If you would like to see these numbers and dates in a plan, there is a filled-in example
           event at{" "}
-          <Link to="/example" className="font-medium text-brand underline">
+          <Link to="/example" className={linkInline}>
             the worked example
           </Link>
           .
         </p>
-      </main>
-    </div>
+      </div>
+    </PublicPage>
   );
 }

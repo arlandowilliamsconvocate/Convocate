@@ -1,7 +1,7 @@
 import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { AuthShell } from "~/components/auth-shell";
-import { Button } from "~/components/ui";
+import { actionPrimary, actionSecondary, linkInline } from "~/components/public-page";
 import { acceptInviteFn, getInviteFn } from "~/server/api";
 
 export const Route = createFileRoute("/invite/$token")({
@@ -59,19 +59,19 @@ function InvitePage() {
         title="This invite is no longer valid"
         subtitle="Nothing has been changed. Ask the conference owner for a new link."
         footer={
-          <Link to="/app" className="font-medium text-brand underline">
+          <Link to="/app" className={linkInline}>
             Go to your conferences
           </Link>
         }
       >
-        <p className="text-sm text-ink">
+        <p className="text-[16px] leading-[1.75] text-charcoal">
           {reason === "revoked"
             ? "The conference owner revoked this invite link, so it no longer opens anything."
             : reason === "expired"
               ? "Invite links expire 30 days after they are created."
               : "This link does not match an invite — it may have been copied incompletely, or the conference may have been deleted."}
         </p>
-        <p className="mt-3 text-sm text-ink-soft">
+        <p className="mt-3 text-[16px] leading-[1.75] text-charcoal-soft">
           If you are signed in, your own conferences are still there.
         </p>
       </AuthShell>
@@ -93,22 +93,20 @@ function InvitePage() {
           </>
         }
       >
-        <p className="text-sm text-ink">
+        <p className="text-[16px] leading-[1.75] text-charcoal">
           This link makes you {roleWords(invite.role)} of{" "}
           <span className="font-medium">{invite.conferenceName}</span>.
         </p>
-        <p className="mt-2 text-sm text-ink-soft">
+        <p className="mt-2 text-[16px] leading-[1.75] text-charcoal-soft">
           Use the same account you already work in, or start a new one — either way you will land
           on the conference as soon as you sign in.
         </p>
-        <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-          <a href={`/signin?redirect=${back}`} className="flex-1">
-            <Button className="w-full">Sign in</Button>
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <a href={`/signin?redirect=${back}`} className={`${actionPrimary} flex-1`}>
+            Sign in
           </a>
-          <a href={`/signup?redirect=${back}`} className="flex-1">
-            <Button variant="secondary" className="w-full">
-              Create an account
-            </Button>
+          <a href={`/signup?redirect=${back}`} className={`${actionSecondary} flex-1`}>
+            Create an account
           </a>
         </div>
       </AuthShell>
@@ -121,13 +119,13 @@ function InvitePage() {
         title="We could not add you to this conference"
         subtitle={`The invite for ${invite.conferenceName} could not be used just now.`}
         footer={
-          <a href={conferencePath} className="font-medium text-brand underline">
+          <a href={conferencePath} className={linkInline}>
             Try opening the conference
           </a>
         }
       >
-        <p className="text-sm text-ink">{error}</p>
-        <p className="mt-3 text-sm text-ink-soft">
+        <p className="text-[16px] leading-[1.75] text-charcoal">{error}</p>
+        <p className="mt-3 text-[16px] leading-[1.75] text-charcoal-soft">
           Ask the conference owner to send a fresh invite link.
         </p>
       </AuthShell>
@@ -140,7 +138,7 @@ function InvitePage() {
       subtitle={`Adding you as ${invite.role === "editor" ? "an Editor" : "a Viewer"}…`}
       footer={<>One moment — we are opening the conference for you.</>}
     >
-      <p className="text-sm text-ink-soft">
+      <p className="text-[16px] leading-[1.75] text-charcoal-soft">
         {invite.currentRole
           ? "You already have access; we are keeping the higher of the two roles."
           : "If this takes more than a few seconds, reload the page."}
