@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "@tanstack/react-router";
 import { Button, Card, EmptyState, Input } from "~/components/ui";
+import { SectionHead } from "~/components/app-ui";
 import {
   CHECKLIST_LABEL_MAX,
   CHECKLIST_PHASE_NOTES,
@@ -69,14 +70,11 @@ export function ChecklistSection({
 }) {
   if (locked || !checklist) {
     return (
-      <section className="space-y-4">
-        <div>
-          <h2 className="text-xl text-ink">Checklist</h2>
-          <p className="mt-0.5 text-sm text-ink-soft">
-            What has to happen before the conference and what has to happen after it, in one list
-            the committee can tick off.
-          </p>
-        </div>
+      <section id="checklist" className="scroll-mt-32 space-y-4">
+        <SectionHead
+          title="Checklist"
+          lede="What has to happen before the conference and what has to happen after it, in one list the committee can tick off."
+        />
         <EmptyState
           title={locked ? "The checklist comes with the unlock" : "The checklist is not available here"}
           body={CHECKLIST_LOCKED_HINT}
@@ -93,19 +91,16 @@ export function ChecklistSection({
   const { items, canEdit, progress, sample } = checklist;
 
   return (
-    <section className="space-y-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="text-xl text-ink">Checklist</h2>
-          <p className="mt-0.5 text-sm text-ink-soft">
-            What still has to happen before the conference, and what still has to happen after it.
-            No item carries a due date — it is either done or it is not.
+    <section id="checklist" className="scroll-mt-32 space-y-4">
+      <SectionHead
+        title="Checklist"
+        lede="What still has to happen before the conference, and what still has to happen after it. No item carries a due date — it is either done or it is not."
+        actions={
+          <p className="text-[13px] tabular-nums text-charcoal">
+            {overallProgressText(progress.overall.done, progress.overall.total)}
           </p>
-        </div>
-        <p className="text-sm font-medium text-ink">
-          {overallProgressText(progress.overall.done, progress.overall.total)}
-        </p>
-      </div>
+        }
+      />
 
       <div className="grid gap-4 lg:grid-cols-2">
         {CHECKLIST_PHASES.map((phase) => (
@@ -328,7 +323,7 @@ function PhaseColumn({
                     </button>
                     <button
                       type="button"
-                      className="rounded px-1.5 py-1 text-xs text-red-700 hover:bg-red-50 disabled:opacity-40"
+                      className="rounded px-1.5 py-1 text-xs text-[#8A2F22] hover:bg-[#8A2F22]/[0.06] disabled:opacity-40"
                       disabled={busy !== null}
                       aria-label={`Remove ${item.label}`}
                       onClick={() => {
@@ -370,7 +365,7 @@ function PhaseColumn({
         </form>
       ) : null}
 
-      {error ? <p className="mt-2 text-sm text-red-700">{error}</p> : null}
+      {error ? <p className="mt-2 text-sm text-[#8A2F22]">{error}</p> : null}
     </Card>
   );
 }

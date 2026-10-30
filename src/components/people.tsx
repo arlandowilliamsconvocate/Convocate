@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "@tanstack/react-router";
 import { Button, Card, Field, Select } from "~/components/ui";
+import { SectionHead } from "~/components/app-ui";
 import { formatDate } from "~/lib/money";
 import { LOCKED_CONTROL_HINT, SAMPLE_COMMITTEE_NOTE, UPGRADE_PRICE } from "~/lib/plan";
 import type { ConferenceInvite, ConferenceMember, InviteRole, MemberRole } from "~/server/db.server";
@@ -17,7 +18,7 @@ const roleLabel = (role: MemberRole | InviteRole): string =>
 
 const roleTone: Record<MemberRole, string> = {
   owner: "bg-brand-soft text-brand ring-1 ring-brand/20",
-  editor: "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200",
+  editor: "bg-sage/10 text-sage-ink ring-1 ring-sage/30",
   viewer: "bg-slate-100 text-slate-700 ring-1 ring-line",
 };
 
@@ -49,10 +50,8 @@ export function PeopleSection({
 }) {
   if (sample) {
     return (
-      <section className="space-y-4">
-        <div>
-          <h2 className="text-xl text-ink">People with access</h2>
-        </div>
+      <section id="people" className="scroll-mt-32 space-y-4">
+        <SectionHead title="People with access" />
         <Card className="p-4">
           <p className="text-sm text-ink">{SAMPLE_COMMITTEE_NOTE}</p>
         </Card>
@@ -60,14 +59,11 @@ export function PeopleSection({
     );
   }
   return (
-    <section className="space-y-4">
-      <div>
-        <h2 className="text-xl text-ink">People with access</h2>
-        <p className="mt-0.5 text-sm text-ink-soft">
-          A conference is run by a committee. The owner can invite people by link and decide
-          whether each of them can edit or only read.
-        </p>
-      </div>
+    <section id="people" className="scroll-mt-32 space-y-4">
+      <SectionHead
+        title="People with access"
+        lede="A conference is run by a committee. The owner can invite people by link and decide whether each of them can edit or only read."
+      />
 
       <Card className="overflow-hidden">
         <ul className="divide-y divide-line/70">
@@ -165,7 +161,7 @@ function MemberRow({
           {isSelf ? <span className="ml-1.5 text-xs text-ink-soft">(you)</span> : null}
         </p>
         <p className="truncate text-xs text-ink-soft">{member.email}</p>
-        {error ? <p className="mt-1 text-xs text-red-700">{error}</p> : null}
+        {error ? <p className="mt-1 text-xs text-[#8A2F22]">{error}</p> : null}
       </div>
       <div className="flex items-center gap-2">
         <span
@@ -232,7 +228,7 @@ function LeavePanel({ conferenceId }: { conferenceId: number }) {
         <p className="text-sm text-ink-soft">
           You were invited to this conference. You can take yourself off the list at any time.
         </p>
-        {error ? <p className="mt-1 text-sm text-red-700">{error}</p> : null}
+        {error ? <p className="mt-1 text-sm text-[#8A2F22]">{error}</p> : null}
       </div>
       <Button variant="secondary" disabled={busy} onClick={leave}>
         Leave this conference
@@ -353,9 +349,9 @@ function InvitePanel({
           {busy ? "Working…" : "Create invite link"}
         </Button>
       </div>
-      {error ? <p className="mt-2 text-sm text-red-700">{error}</p> : null}
+      {error ? <p className="mt-2 text-sm text-[#8A2F22]">{error}</p> : null}
       {notice ? (
-        <p className="mt-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800 ring-1 ring-emerald-200">
+        <p className="mt-2 rounded-lg bg-sage/10 px-3 py-2 text-sm text-sage-ink ring-1 ring-sage/30">
           {notice}
         </p>
       ) : null}

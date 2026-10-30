@@ -184,3 +184,77 @@
   }
 }
 
+
+/*
+ * ---------------------------------------------------------------------------
+ * The signed-in app interior.
+ * ---------------------------------------------------------------------------
+ *
+ * The public pages were art-directed in the warm editorial language (cream,
+ * charcoal, hairline taupe, one muted terracotta). The product behind the sign
+ * wall kept the original palette (blue brand, white cards, drop shadows), so an
+ * organizer who paid and signed in landed back in a different-looking product.
+ *
+ * `.app-surface` is the shell's own root. It carries two things:
+ *
+ *  1. The cream ground and the grain, exactly as the public pages paint it.
+ *  2. A **re-map of the original palette tokens**, so every older screen and
+ *     component still written in `bg-white` / `border-line` / `text-brand` —
+ *     the checklist, registration, people and settings internals — paints in
+ *     cream, taupe and terracotta instead of white and navy without a single
+ *     line of markup changing. Tailwind v4 emits `var(--color-*)` for every
+ *     colour utility, so the remap is scoped: /admin, /example and the print
+ *     sheets sit outside `.app-surface` and keep the palette they were built
+ *     for.
+ *
+ * Nothing here changes a layout, a name or a behaviour — only colour and type.
+ */
+.app-surface {
+  --color-white: #fbf7f0;
+  --color-paper: #fbf7f0;
+  --color-paper-deep: #f5eee2;
+  --color-line: #ded3c4;
+  --color-ink: #2b2724;
+  --color-ink-soft: #5e564e;
+  --color-brand: #8a4a2a;
+  --color-brand-soft: #f5eee2;
+  --color-brass: #8a4a2a;
+  background-color: var(--color-cream);
+  color: var(--color-charcoal);
+}
+/* Fraunces for the headings that the app's older screens left in Iowan. */
+.app-surface :is(h1, h2, h3) {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+/*
+ * A drop shadow is the one thing that reads as "old product" on cream paper.
+ * Legacy panels lose it; the hairline border stays and does the separating.
+ */
+.app-surface .shadow-sm,
+.app-surface .shadow-md,
+.app-surface .shadow {
+  box-shadow: none;
+}
+/*
+ * Numbers line up: every figure in the app is set in tabular numerals so a
+ * column of amounts can be compared down its last digit.
+ */
+.app-surface .tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * The editorial language has no pills and no floating cards: a chip is a small
+ * caps label in a hairline box. The older app components still carry
+ * `rounded-xl` / `rounded-full` from the product's first design, so inside the
+ * app shell those radii are squared off. Unlayered, so it wins over the
+ * utility layer without `!important`.
+ */
+.app-surface :where(.rounded-xl, .rounded-lg, .rounded-md, .rounded-full, .rounded-sm) {
+  border-radius: 0;
+}
+/* A dashed box is the empty state's hairline, not a card edge. */
+.app-surface .border-dashed {
+  border-style: solid;
+}

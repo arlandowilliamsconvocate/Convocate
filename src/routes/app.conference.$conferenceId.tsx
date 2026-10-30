@@ -1,6 +1,27 @@
 import { Link, createFileRoute, useRouter } from '@tanstack/react-router'
 import { useState } from "react";
-import { Button, Card, EmptyState, Field, Input, Select, Textarea } from "~/components/ui";
+import {
+  Button,
+  Chip,
+  EmptyState,
+  EYEBROW,
+  Field,
+  Figure,
+  Input,
+  LEDE,
+  META,
+  Panel,
+  SectionHead,
+  Select,
+  Textarea,
+  actionLink,
+  errorClass,
+  fieldHintClass,
+  moneyCell,
+  tdClass,
+  thClass,
+} from "~/components/app-ui";
+import { SectionNav } from "~/components/app-page";
 import { PeopleSection } from "~/components/people";
 import { RegistrationSection } from "~/components/registration";
 import { ChecklistSection } from "~/components/checklist";
@@ -133,12 +154,19 @@ function ConferencePage() {
   const { detail, registration, checklist } = Route.useLoaderData();
   if (!detail) {
     return (
-      <div className="mx-auto max-w-xl py-16 text-center">
-        <h1 className="text-2xl text-ink">Conference not found</h1>
-        <p className="mt-2 text-sm text-ink-soft">
+      <div className="mx-auto max-w-[46ch] py-16 text-center">
+        <p className={EYEBROW}>Not found</p>
+        <h1 className="font-display mt-2.5 text-[1.8rem] font-normal leading-tight text-charcoal">
+          Conference not found
+        </h1>
+        <span aria-hidden="true" className="mx-auto mt-4 block h-[2px] w-12 bg-terracotta" />
+        <p className={`mt-4 ${LEDE}`}>
           It may have been deleted, or it belongs to another account.
         </p>
-        <Link to="/app" className="mt-4 inline-block text-sm font-medium text-brand underline">
+        <Link
+          to="/app"
+          className="mt-6 inline-flex min-h-12 items-center border border-charcoal px-5 text-[11px] uppercase tracking-[0.16em] text-charcoal transition-colors hover:bg-charcoal hover:text-cream"
+        >
           Back to your conferences
         </Link>
       </div>
@@ -198,41 +226,36 @@ function ConferencePage() {
   return (
     <div className="space-y-10">
       <header>
-        <Link to="/app" className="text-sm text-ink-soft hover:text-ink">
+        <Link
+          to="/app"
+          className="inline-flex min-h-11 items-center text-[10.5px] uppercase tracking-[0.18em] text-charcoal-soft transition-colors hover:text-charcoal"
+        >
           ← All conferences
         </Link>
-        <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-3xl text-ink">{conference.name}</h1>
-              {sample ? (
-                <span className="rounded-full bg-brand-soft px-2.5 py-1 text-xs font-semibold text-brand ring-1 ring-brand/20">
-                  {SAMPLE_BADGE}
-                </span>
-              ) : null}
-              {!sample && role !== "owner" ? (
-                <span className="rounded-full bg-brand-soft px-2.5 py-1 text-xs font-semibold text-brand ring-1 ring-brand/20">
-                  Shared with you · {role === "editor" ? "Editor" : "Viewer"}
-                </span>
-              ) : null}
-              {locked ? (
-                <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-900 ring-1 ring-amber-300">
-                  Free plan · not unlocked
-                </span>
-              ) : null}
-              {entitlement.adminUnlocked && role === "owner" ? (
-                <span className="rounded-full bg-brand-soft px-2.5 py-1 text-xs font-semibold text-brand ring-1 ring-brand/20">
-                  {ADMIN_PLAN_BADGE}
-                </span>
-              ) : null}
-            </div>
-            <p className="mt-1 text-sm text-ink-soft">
+        <div className="mt-2 flex flex-wrap items-end justify-between gap-x-8 gap-y-5">
+          <div className="min-w-0 max-w-[62ch]">
+            <p className={EYEBROW}>Conference</p>
+            <h1 className="font-display mt-2.5 text-balance text-[clamp(1.7rem,3.2vw,2.4rem)] font-normal leading-[1.1] tracking-[-0.015em] text-charcoal">
+              {conference.name}
+            </h1>
+            <span aria-hidden="true" className="mt-4 block h-[2px] w-12 bg-terracotta" />
+            <p className={`mt-4 ${META}`}>
               {formatDateRange(conference.startDate, conference.endDate)}
               {conference.venue ? ` · ${conference.venue}` : ""}
               {conference.expectedAttendance > 0
                 ? ` · ${String(conference.expectedAttendance)} expected`
                 : ""}
             </p>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              {sample ? <Chip tone="attention">{SAMPLE_BADGE}</Chip> : null}
+              {!sample && role !== "owner" ? (
+                <Chip>Shared with you · {role === "editor" ? "Editor" : "Viewer"}</Chip>
+              ) : null}
+              {locked ? <Chip tone="flight">Free plan · not unlocked</Chip> : null}
+              {entitlement.adminUnlocked && role === "owner" ? (
+                <Chip>{ADMIN_PLAN_BADGE}</Chip>
+              ) : null}
+            </div>
           </div>
           <BudgetTargetEditor
             conferenceId={conference.id}
@@ -242,85 +265,112 @@ function ConferencePage() {
         </div>
       </header>
 
-      {locked ? (
-        <UpgradePanel
-          conferenceId={conference.id}
-          conferenceName={conference.name}
-          canPay={role === "owner"}
-          payment={entitlement.payment}
-        />
-      ) : null}
-      {sample ? (
-        <div className="rounded-xl border border-brand/30 bg-brand-soft/50 px-4 py-3 text-sm text-ink">
-          <span className="font-medium text-brand">{SAMPLE_NOTICE_TITLE}</span> {SAMPLE_NOTICE_BODY}
-        </div>
-      ) : null}
-
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat
-          label="Budget target"
-          value={formatMoneyOrHidden(targetCents)}
-          hint={targetCents === null ? HIDDEN_MONEY_NOTE : undefined}
-        />
-        <Stat
-          label="Total planned"
-          value={formatMoneyOrHidden(totalPlanned)}
-          hint={totalPlanned === null ? HIDDEN_MONEY_NOTE : undefined}
-        />
-        <Stat
-          label="Total committed"
-          value={formatMoneyOrHidden(totalCommitted)}
-          hint={totalCommitted === null ? HIDDEN_MONEY_NOTE : undefined}
-        />
-        <Stat
-          label={overBudget ? "Over budget by" : "Unallocated"}
-          value={formatMoneyOrHidden(unallocated === null ? null : Math.abs(unallocated))}
-          tone={overBudget ? "danger" : "default"}
-          hint={
-            unallocated === null
-              ? HIDDEN_MONEY_NOTE
-              : overBudget
-                ? "Planned lines exceed the target"
-                : "Target minus planned lines"
-          }
-        />
-      </section>
-
-      {/* Only a committee Viewer gets the view-only notice. A free-plan owner is
-          not a viewer: it is the plan that is limited, not their role, and their
-          own figures are still theirs. The example is not a viewer either: its
-          figures are invented and shown to everyone, so the "money is hidden"
-          note would be a lie there. */}
-      {sample || role !== "viewer" ? null : (
-        <div className="rounded-xl border border-line bg-paper-deep/60 px-4 py-3 text-sm text-ink-soft">
-          <span className="font-medium text-ink">View only.</span> You can read this conference but
-          not change it. {HIDDEN_MONEY_NOTE} — every fee, honorarium, travel and equipment cost,
-          every budget figure and every total. Ask the owner for Editor access if you need them.
-        </div>
-      )}
-
-      {/* Where you stand: the event's own figures, in one compact line, with a
-          short summary above them when the assistant can write one. The figures
-          are built from exactly the rows this page renders below — the same
-          function the server uses — so the line and the summary cannot disagree
-          about what is on this conference. */}
-      <EventStandPanel
-        conferenceId={conference.id}
-        facts={buildStandFacts({
-          budgetItems,
-          contracts,
-          checklistItems: checklist?.items ?? [],
-          attendeePlaces: registration?.totals.headcount ?? 0,
-          budgetTargetCents: conference.budgetTargetCents,
-          checklistIsTemplate: sample,
-        })}
+      {/* The sections of this conference, as anchors on the one page. Nothing is
+          hidden behind a tab: the budget calculator's "open the budget" link
+          still lands on the lines it just wrote. */}
+      <SectionNav
+        items={[
+          { id: "overview", label: "Overview" },
+          { id: "budget", label: "Budget" },
+          { id: "contracts", label: "Contracts" },
+          { id: "checklist", label: "Checklist" },
+          { id: "registration", label: "Registration" },
+          { id: "people", label: "People" },
+        ]}
       />
+
+      <div id="overview" className="scroll-mt-32 space-y-8">
+        {locked ? (
+          <UpgradePanel
+            conferenceId={conference.id}
+            conferenceName={conference.name}
+            canPay={role === "owner"}
+            payment={entitlement.payment}
+          />
+        ) : null}
+        {sample ? (
+          <div className="border border-charcoal/25 bg-cream-deep px-4 py-3 text-[14px] leading-relaxed text-charcoal">
+            <span className="text-[10.5px] uppercase tracking-[0.18em] text-terracotta-ink">
+              {SAMPLE_NOTICE_TITLE}
+            </span>{" "}
+            {SAMPLE_NOTICE_BODY}
+          </div>
+        ) : null}
+
+        {/* The four figures the whole page is about, on one line: what you set
+            aside, what you plan to spend, what is already agreed, and what is
+            left. Over budget is terracotta ink — a state to notice, not an alarm. */}
+        <section
+          aria-label="Budget summary"
+          className="grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-4"
+        >
+          <Figure
+            label="Budget target"
+            value={formatMoneyOrHidden(targetCents)}
+            hint={targetCents === null ? HIDDEN_MONEY_NOTE : undefined}
+            tone="muted"
+          />
+          <Figure
+            label="Total planned"
+            value={formatMoneyOrHidden(totalPlanned)}
+            hint={totalPlanned === null ? HIDDEN_MONEY_NOTE : "Every line's planned amount"}
+          />
+          <Figure
+            label="Total committed"
+            value={formatMoneyOrHidden(totalCommitted)}
+            hint={totalCommitted === null ? HIDDEN_MONEY_NOTE : "What is already agreed"}
+          />
+          <Figure
+            label={overBudget ? "Over budget by" : "Unallocated"}
+            value={formatMoneyOrHidden(unallocated === null ? null : Math.abs(unallocated))}
+            tone={overBudget ? "over" : "default"}
+            hint={
+              unallocated === null
+                ? HIDDEN_MONEY_NOTE
+                : overBudget
+                  ? "Planned lines exceed the target"
+                  : "Target minus planned lines"
+            }
+          />
+        </section>
+
+        {/* Only a committee Viewer gets the view-only notice. A free-plan owner is
+            not a viewer: it is the plan that is limited, not their role, and their
+            own figures are still theirs. The example is not a viewer either: its
+            figures are invented and shown to everyone, so the "money is hidden"
+            note would be a lie there. */}
+        {sample || role !== "viewer" ? null : (
+          <div className="border-l-2 border-taupe py-1 pl-4 text-[14px] leading-relaxed text-charcoal-soft">
+            <span className="text-charcoal">View only.</span> You can read this conference but not
+            change it. {HIDDEN_MONEY_NOTE} — every fee, honorarium, travel and equipment cost, every
+            budget figure and every total. Ask the owner for Editor access if you need them.
+          </div>
+        )}
+
+        {/* Where you stand: the event's own figures, in one compact line, with a
+            short summary above them when the assistant can write one. The figures
+            are built from exactly the rows this page renders below — the same
+            function the server uses — so the line and the summary cannot disagree
+            about what is on this conference. */}
+        <EventStandPanel
+          conferenceId={conference.id}
+          facts={buildStandFacts({
+            budgetItems,
+            contracts,
+            checklistItems: checklist?.items ?? [],
+            attendeePlaces: registration?.totals.headcount ?? 0,
+            budgetTargetCents: conference.budgetTargetCents,
+            checklistIsTemplate: sample,
+          })}
+        />
+      </div>
       <BudgetSection
         conferenceId={conference.id}
         items={budgetItems}
         canEdit={canEditBudget}
         locked={locked}
         freePlanBudgetLines={entitlement.freePlanBudgetLines}
+        targetCents={conference.budgetTargetCents}
       />
       <ContractsSection
         contracts={contracts}
@@ -430,21 +480,23 @@ function UpgradePanel({
   };
 
   return (
-    <Card className="border-amber-300 bg-amber-50/50 p-5">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="max-w-xl">
-          <h2 className="font-serif text-xl text-ink">
+    <Panel as="section" className="border-terracotta/45 p-5 sm:p-6">
+      <div className="flex flex-wrap items-start justify-between gap-5">
+        <div className="max-w-[54ch]">
+          <p className={EYEBROW}>Free plan</p>
+          <h2 className="font-display mt-2 text-[1.35rem] font-normal leading-tight text-charcoal">
             &ldquo;{conferenceName}&rdquo; is on the free plan
           </h2>
-          <p className="mt-1 text-sm text-ink-soft">{UPGRADE_PANEL_BODY}</p>
+          <span aria-hidden="true" className="mt-3 block h-[2px] w-10 bg-terracotta" />
+          <p className="mt-3 text-[14.5px] leading-[1.7] text-charcoal-soft">{UPGRADE_PANEL_BODY}</p>
         </div>
-        <div className="flex max-w-[20rem] flex-col items-end gap-2">
+        <div className="flex max-w-[22rem] flex-col items-end gap-2.5">
           {pendingFresh && payment ? (
             <>
               <Button disabled title={PAYMENT_STARTED_NOTE}>
                 {PAYMENT_IN_PROGRESS_LABEL}
               </Button>
-              <p className="text-right text-xs text-ink-soft">
+              <p className="text-right text-[12px] leading-relaxed text-charcoal-soft">
                 {PAYMENT_STARTED_NOTE} {PAYMENT_CONFIRM_NOTE}{" "}
                 {PAYMENT_PENDING_RETRY_NOTE(
                   paymentRetryWaitLabel(payment.startedAt, Date.now()),
@@ -454,7 +506,7 @@ function UpgradePanel({
           ) : canPay ? (
             <>
               {retryReady ? (
-                <p className="text-right text-xs font-medium text-ink">{PAYMENT_RETRY_HEADLINE}</p>
+                <p className="text-right text-[12px] text-charcoal">{PAYMENT_RETRY_HEADLINE}</p>
               ) : null}
               <Button onClick={startPayment} disabled={busy}>
                 {busy
@@ -463,7 +515,7 @@ function UpgradePanel({
                     ? PAYMENT_RETRY_BUTTON_LABEL
                     : UNLOCK_BUTTON_LABEL}
               </Button>
-              <p className="text-right text-xs text-ink-soft">
+              <p className="text-right text-[12px] leading-relaxed text-charcoal-soft">
                 {retryReady ? (
                   PAYMENT_RETRY_NOTE
                 ) : (
@@ -475,78 +527,54 @@ function UpgradePanel({
               </p>
             </>
           ) : (
-            <p className="text-right text-xs text-ink-soft">{PAYMENT_OWNER_ONLY_NOTE}</p>
+            <p className="text-right text-[12px] text-charcoal-soft">{PAYMENT_OWNER_ONLY_NOTE}</p>
           )}
-          {error ? <p className="text-right text-xs text-red-700">{error}</p> : null}
-          <p className="text-right text-xs font-medium text-ink">{REFUND_SHORT}</p>
+          {error ? (
+            <p role="alert" className={`text-right ${errorClass}`}>
+              {error}
+            </p>
+          ) : null}
+          <p className="text-right text-[12px] text-charcoal">{REFUND_SHORT}</p>
         </div>
       </div>
       {/* The promise an organizer reads before paying, and still sees while a payment
           is open: the 48 hours runs from the charge, so it is theirs either way. */}
-      <div className="mt-4 rounded-lg border border-amber-300/60 bg-white/60 px-4 py-3">
-        <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
+      <div className="mt-5 border-l-2 border-taupe bg-cream-deep/60 px-4 py-3">
+        <p className="text-[10.5px] uppercase tracking-[0.18em] text-charcoal-soft">
           The refund promise
         </p>
-        <p className="mt-1 text-sm leading-relaxed text-ink">{REFUND_PROMISE}</p>
+        <p className="mt-1.5 text-[14px] leading-relaxed text-charcoal">{REFUND_PROMISE}</p>
       </div>
 
-      <div className="mt-5 grid gap-5 border-t border-amber-300/60 pt-4 sm:grid-cols-2">
+      <div className="mt-6 grid gap-6 border-t border-taupe/70 pt-5 sm:grid-cols-2">
         <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
+          <h3 className="text-[10.5px] uppercase tracking-[0.18em] text-charcoal-soft">
             On the free plan
           </h3>
-          <ul className="mt-2 space-y-1.5 text-sm text-ink">
+          <ul className="mt-3 space-y-1.5 text-[13.5px] leading-snug text-charcoal">
             {FREE_PLAN_INCLUDES.map((line) => (
-              <li key={line} className="flex gap-2">
-                <span aria-hidden="true" className="text-ink-soft">
-                  ·
-                </span>
+              <li key={line} className="flex gap-2.5">
+                <span aria-hidden="true" className="mt-[0.65em] h-px w-3 shrink-0 bg-terracotta" />
                 <span>{line}</span>
               </li>
             ))}
           </ul>
         </div>
         <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
+          <h3 className="text-[10.5px] uppercase tracking-[0.18em] text-charcoal-soft">
             {UPGRADE_PRICE} unlocks on this conference
           </h3>
-          <ul className="mt-2 space-y-1.5 text-sm text-ink">
+          <ul className="mt-3 space-y-1.5 text-[13.5px] leading-snug text-charcoal">
             {UPGRADE_INCLUDES.map((line) => (
-              <li key={line} className="flex gap-2">
-                <span aria-hidden="true" className="text-brand">
-                  ✓
-                </span>
+              <li key={line} className="flex gap-2.5">
+                <span aria-hidden="true" className="mt-[0.65em] h-px w-3 shrink-0 bg-terracotta" />
                 <span>{line}</span>
               </li>
             ))}
           </ul>
         </div>
       </div>
-    </Card>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  hint,
-  tone = "default",
-}: {
-  label: string;
-  value: string;
-  hint?: string;
-  tone?: "default" | "danger";
-}) {
-  return (
-    <Card className={`p-4 ${tone === "danger" ? "border-red-300 bg-red-50/60" : ""}`}>
-      <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">{label}</p>
-      <p
-        className={`mt-1 font-serif text-2xl ${tone === "danger" ? "text-red-700" : "text-ink"}`}
-      >
-        {value}
-      </p>
-      {hint ? <p className="mt-0.5 text-xs text-ink-soft">{hint}</p> : null}
-    </Card>
+    </Panel>
   );
 }
 
@@ -586,14 +614,9 @@ function BudgetTargetEditor({
   };
 
   return (
-    <form onSubmit={save} className="flex items-end gap-2">
-      <Field label="Budget target">
-        <Input
-          className="w-32"
-          inputMode="decimal"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-        />
+    <form onSubmit={save} className="flex flex-wrap items-end gap-2">
+      <Field label="Budget target" className="w-36">
+        <Input inputMode="decimal" value={value} onChange={(e) => setValue(e.target.value)} />
       </Field>
       <Button type="submit" disabled={busy}>
         Save
@@ -621,6 +644,7 @@ function BudgetSection({
   canEdit,
   locked,
   freePlanBudgetLines,
+  targetCents,
 }: {
   conferenceId: number;
   items: BudgetItem[];
@@ -628,6 +652,8 @@ function BudgetSection({
   locked: boolean;
   /** How many budget lines the free plan allows — the server's own number. */
   freePlanBudgetLines: number;
+  /** The conference's budget target, shown under the line totals. */
+  targetCents: Money;
 }) {
   const router = useRouter();
   const [showForm, setShowForm] = useState(false);
@@ -652,30 +678,39 @@ function BudgetSection({
     };
   }).filter((row) => row.count > 0);
 
+  // The two column totals, and what is left of the target. Built with
+  // `sumMoney` so a Viewer never sees a partial sum that could read as whole.
+  const plannedTotal = sumMoney(items.map((item) => item.plannedCents));
+  const committedTotal = sumMoney(items.map((item) => item.committedCents));
+  const target = targetCents;
+  const remaining = target === null || plannedTotal === null ? null : target - plannedTotal;
+  const over = remaining !== null && remaining < 0;
+
   return (
     // `id="budget"` is the target of the budget calculator's "Open the budget"
     // link after a save, so an organizer lands on the lines that were just
-    // written instead of at the top of the page. `scroll-mt-24` keeps the
-    // heading clear of the sticky header.
-    <section id="budget" className="scroll-mt-24 space-y-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="text-xl text-ink">Budget</h2>
-          <p className="mt-0.5 text-sm text-ink-soft">
-            Planned is what you expect to spend; committed is what is already agreed.
-          </p>
-        </div>
-        {atFreeLimit ? (
-          <div className="text-right">
-            <Button disabled title={BUDGET_LINE_LIMIT_HINT}>
-              Add budget line
-            </Button>
-            <p className="mt-1 max-w-xs text-xs text-ink-soft">{BUDGET_LINE_LIMIT_HINT}</p>
-          </div>
-        ) : canEdit && !showForm ? (
-          <Button onClick={() => setShowForm(true)}>Add budget line</Button>
-        ) : null}
-      </div>
+    // written instead of at the top of the page. `scroll-mt-32` keeps the
+    // heading clear of the sticky header and the section nav.
+    <section id="budget" className="scroll-mt-32 space-y-5">
+      <SectionHead
+        eyebrow="Budget"
+        title="Every line, planned and committed"
+        lede="Planned is what you expect to spend; committed is what is already agreed."
+        actions={
+          atFreeLimit ? (
+            <div className="max-w-[18rem] text-right">
+              <Button disabled title={BUDGET_LINE_LIMIT_HINT}>
+                Add budget line
+              </Button>
+              <p className="mt-2 text-[11.5px] leading-snug text-charcoal-soft">
+                {BUDGET_LINE_LIMIT_HINT}
+              </p>
+            </div>
+          ) : canEdit && !showForm ? (
+            <Button onClick={() => setShowForm(true)}>Add budget line</Button>
+          ) : null
+        }
+      />
 
       {showForm ? (
         <BudgetItemForm
@@ -700,60 +735,125 @@ function BudgetSection({
             canEdit && !showForm ? (
               <Button onClick={() => setShowForm(true)}>Add first line</Button>
             ) : canEdit ? undefined : (
-              <span className="text-sm text-ink-soft">Viewing only — no budget lines yet.</span>
+              <span className="text-[13px] text-charcoal-soft">Viewing only — no budget lines yet.</span>
             )
           }
         />
       ) : (
         <>
-          <Card className="overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-paper-deep/70 text-left text-xs uppercase tracking-wide text-ink-soft">
+          {/*
+            One table, no cards. The money columns are right-aligned in tabular
+            numerals so forty lines can be read down their last digit, and rows
+            are separated by a hairline rather than boxed.
+
+            At 390px the Category column is dropped and the category is printed
+            under the line's label instead; the row actions move into that same
+            cell. Nothing scrolls sideways and no figure is hidden.
+          */}
+          <div className="border-t border-charcoal">
+            <table className="w-full border-collapse">
+              <caption className="sr-only">
+                Budget lines with their planned and committed amounts
+              </caption>
+              <thead>
                 <tr>
-                  <th className="px-4 py-2.5 font-semibold">Line</th>
-                  <th className="px-4 py-2.5 font-semibold">Category</th>
-                  <th className="px-4 py-2.5 text-right font-semibold">Planned</th>
-                  <th className="px-4 py-2.5 text-right font-semibold">Committed</th>
-                  <th className="px-4 py-2.5" />
+                  <th scope="col" className={thClass}>
+                    Line
+                  </th>
+                  <th scope="col" className={`${thClass} hidden sm:table-cell`}>
+                    Category
+                  </th>
+                  <th scope="col" className={`${thClass} text-right`}>
+                    Planned
+                  </th>
+                  <th scope="col" className={`${thClass} text-right`}>
+                    Committed
+                  </th>
+                  <th scope="col" className={`${thClass} hidden text-right sm:table-cell`}>
+                    <span className="sr-only">Actions</span>
+                  </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-line/70">
+              <tbody>
                 {items.map((item) => (
                   <BudgetRow key={item.id} item={item} canEdit={canEdit} />
                 ))}
               </tbody>
+              <tfoot>
+                <tr className="border-t-2 border-charcoal">
+                  <th scope="row" className="px-3 py-3 text-left">
+                    <span className="text-[10.5px] uppercase tracking-[0.18em] text-charcoal">
+                      Total
+                    </span>
+                    <span className="mt-0.5 block text-[11.5px] font-normal text-charcoal-soft">
+                      {items.length} line{items.length === 1 ? "" : "s"}
+                    </span>
+                  </th>
+                  <td className={`${tdClass} hidden sm:table-cell`} />
+                  <td className={`${moneyCell} text-[14px] font-medium text-charcoal`}>
+                    {formatMoneyOrHidden(plannedTotal)}
+                  </td>
+                  <td className={`${moneyCell} text-[14px] font-medium text-charcoal`}>
+                    {formatMoneyOrHidden(committedTotal)}
+                  </td>
+                  <td className={`${tdClass} hidden sm:table-cell`} />
+                </tr>
+              </tfoot>
             </table>
-          </Card>
+          </div>
+
+          {/* The target, and what is left of it — deliberately outside the table:
+              the line totals above are what the lines add up to, this is what the
+              organizer set aside. Two different things, never the same figure. */}
+          <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2 border-t border-taupe/70 pt-3">
+            <p className="text-[11px] uppercase tracking-[0.16em] text-charcoal-soft">
+              Target {formatMoneyOrHidden(target)} · {over ? "over budget" : "unallocated"}{" "}
+              <span
+                className={`text-[13.5px] normal-case tracking-normal tabular-nums ${
+                  over ? "text-terracotta-ink" : "text-charcoal"
+                }`}
+              >
+                {formatMoneyOrHidden(remaining === null ? null : Math.abs(remaining))}
+              </span>
+            </p>
+            {remaining === null ? (
+              <p className="text-[11.5px] text-charcoal-soft">{HIDDEN_MONEY_NOTE}</p>
+            ) : null}
+          </div>
 
           {rollups.length > 0 ? (
-            <Card className="p-4">
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-ink-soft">
+            <div className="border-t border-taupe/70 pt-4">
+              <h3 className="text-[10.5px] uppercase tracking-[0.18em] text-charcoal-soft">
                 By category
               </h3>
-              <ul className="mt-3 divide-y divide-line/70">
+              <ul className="mt-2">
                 {rollups.map((row) => (
                   <li
                     key={row.category}
-                    className="flex items-center justify-between py-2 text-sm"
+                    className="flex items-baseline justify-between gap-4 border-t border-taupe/50 py-2 text-[13.5px] first:border-t-0"
                   >
-                    <span className="text-ink">
+                    <span className="min-w-0 text-charcoal">
                       {row.category}{" "}
-                      <span className="text-xs text-ink-soft">
+                      <span className="text-[11.5px] text-charcoal-soft">
                         ({row.count} line{row.count === 1 ? "" : "s"})
                       </span>
                     </span>
-                    <span className="flex gap-8 tabular-nums">
-                      <span className="text-ink-soft">
-                        planned {formatMoneyOrHidden(row.planned)}
+                    <span className="flex shrink-0 items-baseline gap-6 tabular-nums">
+                      <span className="w-24 text-right text-charcoal-soft">
+                        {formatMoneyOrHidden(row.planned)}
                       </span>
-                      <span className="w-28 text-right font-medium text-ink">
+                      <span className="w-24 text-right text-charcoal">
                         {formatMoneyOrHidden(row.committed)}
                       </span>
                     </span>
                   </li>
                 ))}
               </ul>
-            </Card>
+              <p className="mt-1 flex justify-end gap-6 text-[10px] uppercase tracking-[0.16em] text-charcoal-soft">
+                <span className="w-24 text-right">Planned</span>
+                <span className="w-24 text-right">Committed</span>
+              </p>
+            </div>
           ) : null}
         </>
       )}
@@ -775,7 +875,7 @@ function BudgetRow({ item, canEdit }: { item: BudgetItem; canEdit: boolean }) {
 
   if (editing && canEdit) {
     return (
-      <tr className="bg-paper-deep/30">
+      <tr className="bg-cream-deep/60">
         <td colSpan={5} className="p-0">
           <BudgetItemForm
             conferenceId={item.conferenceId}
@@ -792,34 +892,53 @@ function BudgetRow({ item, canEdit }: { item: BudgetItem; canEdit: boolean }) {
   }
 
   return (
-    <tr className="align-top">
-      <td className="px-4 py-3">
-        <p className="font-medium text-ink">{item.label}</p>
-        {item.notes ? <p className="mt-0.5 text-xs text-ink-soft">{item.notes}</p> : null}
+    <tr className="border-t border-taupe/60 align-top transition-colors hover:bg-cream-deep/30">
+      <td className={tdClass}>
+        <p className="text-[14px] leading-snug text-charcoal">{item.label}</p>
+        {item.notes ? (
+          <p className="mt-0.5 max-w-[46ch] text-[12px] leading-snug text-charcoal-soft">
+            {item.notes}
+          </p>
+        ) : null}
+        {/* The category and the row's actions, on a phone only: the Category and
+            Actions columns are dropped below 640px so nothing scrolls sideways. */}
+        <p className="mt-1.5 text-[10px] uppercase tracking-[0.16em] text-charcoal-soft sm:hidden">
+          {item.category}
+        </p>
+        {canEdit ? (
+          <div className="mt-2 flex flex-wrap items-center gap-2 sm:hidden">
+            <Button size="sm" variant="secondary" onClick={() => setEditing(true)}>
+              Edit
+            </Button>
+            <Button size="sm" variant="danger" onClick={remove} disabled={busy}>
+              Delete
+            </Button>
+          </div>
+        ) : null}
       </td>
-      <td className="px-4 py-3">
-        <span className="rounded-full bg-brand-soft px-2 py-0.5 text-xs font-medium text-brand">
+      <td className={`${tdClass} hidden sm:table-cell`}>
+        <span className="text-[10px] uppercase tracking-[0.16em] text-charcoal-soft">
           {item.category}
         </span>
       </td>
-      <td className="px-4 py-3 text-right tabular-nums text-ink">
-        {formatMoneyOrHidden(item.plannedCents)}
-      </td>
-      <td className="px-4 py-3 text-right tabular-nums text-ink">
+      <td className={`${moneyCell} text-charcoal`}>{formatMoneyOrHidden(item.plannedCents)}</td>
+      <td className={`${moneyCell} text-charcoal-soft`}>
         {formatMoneyOrHidden(item.committedCents)}
       </td>
-      <td className="px-4 py-3 text-right whitespace-nowrap">
+      <td className={`${tdClass} hidden whitespace-nowrap text-right sm:table-cell`}>
         {canEdit ? (
-          <>
-            <Button variant="ghost" onClick={() => setEditing(true)}>
+          <span className="inline-flex items-center gap-1">
+            <Button size="sm" variant="ghost" onClick={() => setEditing(true)}>
               Edit
             </Button>
-            <Button variant="danger" onClick={remove} disabled={busy}>
+            <Button size="sm" variant="danger" onClick={remove} disabled={busy}>
               Delete
             </Button>
-          </>
+          </span>
         ) : (
-          <span className="text-xs text-ink-soft">—</span>
+          <span aria-hidden="true" className="text-charcoal-soft">
+            —
+          </span>
         )}
       </td>
     </tr>
@@ -881,9 +1000,24 @@ function BudgetItemForm({
   return (
     <form
       onSubmit={submit}
-      className={item ? "grid gap-3 p-4 sm:grid-cols-5 sm:items-end" : "rounded-xl border border-line bg-white p-5 shadow-sm"}
+      className={
+        item
+          ? "border-l-2 border-terracotta/60 bg-cream-deep/50 px-4 py-4"
+          : "border border-taupe/70 bg-cream p-5"
+      }
     >
-      <div className={item ? "contents" : "grid gap-4 sm:grid-cols-2"}>
+      {item ? null : (
+        <p className="text-[10.5px] uppercase tracking-[0.18em] text-terracotta-ink">
+          New budget line
+        </p>
+      )}
+      <div
+        className={
+          item
+            ? "grid gap-4 sm:grid-cols-5 sm:items-end"
+            : "mt-4 grid gap-4 sm:grid-cols-2"
+        }
+      >
         <Field label="Label" className={item ? "sm:col-span-2" : ""}>
           <Input required value={values.label} onChange={update("label")} placeholder="Lakeside hall rental" />
         </Field>
@@ -907,39 +1041,41 @@ function BudgetItemForm({
             placeholder="6000"
           />
         </Field>
-        <Field label="Notes">
+        <Field label="Notes" className={item ? "" : "sm:col-span-2"}>
           <Textarea rows={item ? 1 : 2} value={values.notes} onChange={update("notes")} placeholder="Deposit due 1 Mar" />
         </Field>
       </div>
-      <div className={`flex gap-2 ${item ? "sm:col-span-5 sm:justify-end" : "mt-4 justify-end"}`}>
-        <Button type="button" variant="ghost" onClick={onCancel}>
+      {error ? (
+        <p role="alert" className={`mt-3 ${errorClass}`}>
+          {error}
+        </p>
+      ) : null}
+      <div className="mt-4 flex justify-end gap-2">
+        <Button type="button" variant="ghost" size={item ? "sm" : "md"} onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit" disabled={busy}>
+        <Button type="submit" size={item ? "sm" : "md"} disabled={busy}>
           {busy ? "Saving…" : item ? "Save line" : "Add line"}
         </Button>
       </div>
-      {error ? <p className="text-sm text-red-700 sm:col-span-5">{error}</p> : null}
     </form>
   );
 }
 
 /* -------------------------------------------------------------- contracts */
 
-const kindBadgeTone: Record<ContractKind, string> = {
-  speaker: "bg-brand-soft text-brand",
-  musician: "bg-sky-100 text-sky-800",
-  singer: "bg-indigo-100 text-indigo-800",
-  band: "bg-violet-100 text-violet-800",
-  backline: "bg-stone-200 text-stone-800",
-  venue: "bg-teal-100 text-teal-900",
-  other: "bg-slate-100 text-slate-700",
-};
-
-const statusBadgeTone: Record<ContractStatus, string> = {
-  signed: "bg-emerald-100 text-emerald-900 ring-1 ring-emerald-300",
-  sent: "bg-amber-100 text-amber-900 ring-1 ring-amber-300",
-  not_sent: "bg-white text-ink-soft ring-1 ring-line",
+/**
+ * The two badges on a board card, in the editorial palette.
+ *
+ * The stage column already says where the conversation is, so the contract
+ * status is the one thing the chip has to carry: sage for signed, terracotta
+ * ink for sent and waiting, taupe for not sent yet. The word is always there —
+ * colour is never the only signal.
+ */
+const statusChipTone: Record<ContractStatus, "settled" | "flight" | "quiet"> = {
+  signed: "settled",
+  sent: "flight",
+  not_sent: "quiet",
 };
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
@@ -976,103 +1112,106 @@ function ContractsSection({
   const signedCount = contracts.filter((c) => c.contractStatus === "signed").length;
 
   return (
-    <section className="space-y-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="text-xl text-ink">Guests, suppliers &amp; venue — contracts</h2>
-          <p className="mt-0.5 text-sm text-ink-soft">
-            Speakers, musicians, singers, bands, backline rental companies and the venue itself on
-            one board. Move each one along as the conversation and the contract progress — the
-            badge shows whether the contract itself is signed.
-          </p>
-          {canPrint && contracts.length > 0 ? (
-            <p className="mt-1.5">
-              {/* Printing is an export, and exports are part of the unlock: on a
-                  locked conference the server refuses the board
-                  (`upgrade_required`), so the control is shown disabled with the
-                  reason rather than offered and then refused. */}
-              {locked ? (
-                <>
-                  <span
-                    aria-disabled="true"
-                    title={PRINT_LOCKED_HINT}
-                    className="cursor-not-allowed text-sm font-medium text-ink-soft/70"
-                  >
-                    Print all contracts
-                  </span>
-                  <span className="ml-1.5 text-xs text-ink-soft">{PRINT_LOCKED_HINT}</span>
-                </>
-              ) : (
-                <>
-                  <a
-                    href={`/print/conference/${String(conferenceId)}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-sm font-medium text-brand underline"
-                  >
-                    Print all contracts
-                  </a>
-                  <span className="ml-1.5 text-xs text-ink-soft">
-                    — one page per guest, supplier and venue
-                  </span>
-                </>
-              )}
-            </p>
-          ) : null}
-        </div>
-        {locked ? (
-          <div className="text-right">
-            <Button disabled title={LOCKED_CONTROL_HINT}>
-              Add guest, supplier or venue
-            </Button>
-            <p className="mt-1 max-w-xs text-xs text-ink-soft">
-              Contracts of any kind are part of the {UPGRADE_PRICE} upgrade — not available on the
-              free plan.
-            </p>
-          </div>
-        ) : canEdit && !showForm ? (
-          <Button onClick={() => setShowForm(true)}>Add guest, supplier or venue</Button>
-        ) : null}
-      </div>
+    <section id="contracts" className="scroll-mt-32 space-y-5">
+      <SectionHead
+        eyebrow="Contracts"
+        title="Guests, suppliers & the venue"
+        lede="Speakers, musicians, singers, bands, backline rental companies and the venue itself on one board. Move each one along as the conversation and the contract progress — the badge shows whether the contract itself is signed."
+        actions={
+          locked ? (
+            <div className="max-w-[19rem] text-right">
+              <Button disabled title={LOCKED_CONTROL_HINT}>
+                Add guest, supplier or venue
+              </Button>
+              <p className="mt-2 text-[11.5px] leading-snug text-charcoal-soft">
+                Contracts of any kind are part of the {UPGRADE_PRICE} upgrade — not available on the
+                free plan.
+              </p>
+            </div>
+          ) : canEdit && !showForm ? (
+            <Button onClick={() => setShowForm(true)}>Add guest, supplier or venue</Button>
+          ) : null
+        }
+      />
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      {canPrint && contracts.length > 0 ? (
+        <p className="text-[12.5px] text-charcoal-soft">
+          {/* Printing is an export, and exports are part of the unlock: on a
+              locked conference the server refuses the board
+              (`upgrade_required`), so the control is shown disabled with the
+              reason rather than offered and then refused. */}
+          {locked ? (
+            <>
+              <span
+                aria-disabled="true"
+                title={PRINT_LOCKED_HINT}
+                className="cursor-not-allowed text-[10.5px] uppercase tracking-[0.14em] text-charcoal-soft/70"
+              >
+                Print all contracts
+              </span>
+              <span className="ml-2">{PRINT_LOCKED_HINT}</span>
+            </>
+          ) : (
+            <>
+              <a
+                href={`/print/conference/${String(conferenceId)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-[10.5px] uppercase tracking-[0.14em] text-terracotta-ink underline decoration-terracotta/40 underline-offset-4 hover:decoration-terracotta-ink"
+              >
+                Print all contracts
+              </a>
+              <span className="ml-2">— one page per guest, supplier and venue</span>
+            </>
+          )}
+        </p>
+      ) : null}
+
+      {/* Where the board stands, in six figures: how many are at each stage, what
+          every entry on the board is worth, and — separately, never the same
+          number — what is actually signed. */}
+      <div className="grid grid-cols-2 gap-x-6 gap-y-6 border-b border-taupe/70 pb-6 sm:grid-cols-3 lg:grid-cols-6">
         {stageCounts.map((stage) => (
-          <Card key={stage.key} className="px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
+          <div key={stage.key} className="border-t border-taupe pt-3">
+            <p className="text-[10.5px] uppercase tracking-[0.18em] text-charcoal-soft">
               {stage.label}
             </p>
-            <p className="font-serif text-2xl text-ink">{stage.count}</p>
-          </Card>
+            <p className="mt-1.5 font-display text-[1.35rem] leading-none tabular-nums text-charcoal">
+              {stage.count}
+            </p>
+          </div>
         ))}
         {/* Two separate figures on purpose: the first is every entry on the
             board (quotes, invites, unsigned), the second is only what has
             actually been signed. They must never be read as the same number. */}
-        <Card className="px-4 py-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
+        <div className="border-t border-taupe pt-3">
+          <p className="text-[10.5px] uppercase tracking-[0.18em] text-charcoal-soft">
             All entries · total
           </p>
-          <p className="font-serif text-2xl tabular-nums text-ink">
+          <p className="mt-1.5 font-display text-[1.35rem] leading-none tabular-nums text-charcoal">
             {formatMoneyOrHidden(totalCents)}
           </p>
-          <p className="mt-0.5 text-xs text-ink-soft">
+          <p className="mt-1.5 text-[11px] leading-snug text-charcoal-soft">
             {contracts.length} entr{contracts.length === 1 ? "y" : "ies"} — includes invited and
             unsigned
           </p>
-        </Card>
-        <Card
-          className={`px-4 py-3 ${signedCount > 0 ? "border-emerald-300 bg-emerald-50/40" : ""}`}
-        >
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
+        </div>
+        <div className="border-t border-taupe pt-3">
+          <p className="text-[10.5px] uppercase tracking-[0.18em] text-charcoal-soft">
             Signed only · committed
           </p>
-          <p className="font-serif text-2xl tabular-nums text-ink">
+          <p
+            className={`mt-1.5 font-display text-[1.35rem] leading-none tabular-nums ${
+              signedCount > 0 ? "text-sage-ink" : "text-charcoal"
+            }`}
+          >
             {formatMoneyOrHidden(signedCents)}
           </p>
-          <p className="mt-0.5 text-xs text-ink-soft">
-            {signedCount} of {contracts.length} signed ·{" "}
-            {formatMoneyOrHidden(unsignedCents)} not yet signed
+          <p className="mt-1.5 text-[11px] leading-snug text-charcoal-soft">
+            {signedCount} of {contracts.length} signed · {formatMoneyOrHidden(unsignedCents)} not
+            yet signed
           </p>
-        </Card>
+        </div>
       </div>
 
       {showForm ? (
@@ -1105,24 +1244,32 @@ function ContractsSection({
               canEdit && !showForm ? (
                 <Button onClick={() => setShowForm(true)}>Add the first one</Button>
               ) : canEdit ? undefined : (
-                <span className="text-sm text-ink-soft">Viewing only — nothing on the board yet.</span>
+                <span className="text-[13px] text-charcoal-soft">
+                  Viewing only — nothing on the board yet.
+                </span>
               )
             }
           />
         )
       ) : (
-        <div className="grid gap-4 lg:grid-cols-4">
+        /* Four columns on a wide screen, two on a tablet, one on a phone. Each
+           column is a stage; the rule above it is the stage's edge, not a card. */
+        <div className="grid gap-x-6 gap-y-7 sm:grid-cols-2 lg:grid-cols-4">
           {CONTRACT_STAGES.map((stage) => {
             const inStage = contracts.filter((contract) => contract.stage === stage.key);
             return (
-              <div key={stage.key} className="rounded-xl border border-line bg-paper-deep/40 p-3">
-                <div className="flex items-center justify-between px-1 pb-2">
-                  <h3 className="text-sm font-semibold text-ink">{stage.label}</h3>
-                  <span className="text-xs text-ink-soft">{inStage.length}</span>
+              <div key={stage.key}>
+                <div className="flex items-baseline justify-between gap-2 border-b border-charcoal pb-2">
+                  <h3 className="text-[10.5px] uppercase tracking-[0.18em] text-charcoal">
+                    {stage.label}
+                  </h3>
+                  <span className="text-[12px] tabular-nums text-charcoal-soft">
+                    {inStage.length}
+                  </span>
                 </div>
-                <ul className="space-y-2">
+                <ul className="mt-3 space-y-3">
                   {inStage.length === 0 ? (
-                    <li className="rounded-lg border border-dashed border-line/90 px-3 py-4 text-center text-xs text-ink-soft">
+                    <li className="border border-dashed border-taupe/70 px-3 py-5 text-center text-[12px] text-charcoal-soft">
                       Nothing here
                     </li>
                   ) : (
@@ -1353,92 +1500,90 @@ function ContractCard({
   const signed = contract.contractStatus === "signed";
 
   return (
-    <li
-      className={`rounded-lg border bg-white p-3 shadow-sm ${
-        signed ? "border-emerald-300" : "border-line"
-      }`}
-    >
+    <li className="border border-taupe/70 bg-cream px-3 py-3">
       {error ? (
-        <p className="mb-2 rounded bg-red-50 px-2 py-1 text-xs text-red-700 ring-1 ring-red-200">
+        <p role="alert" className={`mb-2 ${errorClass}`}>
           {error}
         </p>
       ) : null}
       <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-semibold text-ink">{contract.name}</p>
-        <span
-          className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
-            statusBadgeTone[contract.contractStatus]
-          }`}
+        <p className="min-w-0 text-[14px] leading-snug text-charcoal">{contract.name}</p>
+        <Chip
+          tone={statusChipTone[contract.contractStatus]}
           title={`Contract ${contractStatusLabel(contract.contractStatus).toLowerCase()}${
             contract.contractDate ? ` · ${formatDate(contract.contractDate)}` : ""
           }`}
         >
           {signed ? "✓ " : ""}
           {contractStatusLabel(contract.contractStatus)}
-        </span>
+        </Chip>
       </div>
-      <div className="mt-1 flex flex-wrap items-center gap-1.5">
-        <span
-          className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${kindBadgeTone[contract.kind]}`}
-        >
-          {kindLabel(contract.kind)}
-        </span>
+      <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+        <Chip>{kindLabel(contract.kind)}</Chip>
         {contract.contractDate ? (
-          <span className="text-[10px] text-ink-soft">
+          <span className="text-[10px] uppercase tracking-[0.14em] text-charcoal-soft">
             Contract {formatDate(contract.contractDate)}
           </span>
         ) : null}
       </div>
-      {contract.topic ? <p className="mt-1 text-xs text-ink-soft">{contract.topic}</p> : null}
-      <dl className="mt-2 space-y-0.5 text-xs text-ink-soft">
-        <div className="flex justify-between">
-          <dt>{contract.kind === "venue" ? "Rental fee" : "Fee"}</dt>
-          <dd className="tabular-nums">{formatMoneyOrHidden(contract.feeCents)}</dd>
+      {contract.topic ? (
+        <p className="mt-1.5 text-[12.5px] leading-snug text-charcoal-soft">{contract.topic}</p>
+      ) : null}
+      <dl className="mt-2.5 space-y-1 text-[12px]">
+        <div className="flex justify-between gap-2">
+          <dt className="text-charcoal-soft">{contract.kind === "venue" ? "Rental fee" : "Fee"}</dt>
+          <dd className="tabular-nums text-charcoal">{formatMoneyOrHidden(contract.feeCents)}</dd>
         </div>
-        <div className="flex justify-between">
-          <dt>Honorarium</dt>
-          <dd className="tabular-nums">{formatMoneyOrHidden(contract.honorariumCents)}</dd>
+        <div className="flex justify-between gap-2">
+          <dt className="text-charcoal-soft">Honorarium</dt>
+          <dd className="tabular-nums text-charcoal">
+            {formatMoneyOrHidden(contract.honorariumCents)}
+          </dd>
         </div>
-        <div className="flex justify-between">
-          <dt>Travel</dt>
-          <dd className="tabular-nums">{formatMoneyOrHidden(contract.travelCents)}</dd>
+        <div className="flex justify-between gap-2">
+          <dt className="text-charcoal-soft">Travel</dt>
+          <dd className="tabular-nums text-charcoal">{formatMoneyOrHidden(contract.travelCents)}</dd>
         </div>
-        <div className="flex justify-between">
-          <dt>Equipment / rental</dt>
-          <dd className="tabular-nums">{formatMoneyOrHidden(contract.equipmentCents)}</dd>
+        <div className="flex justify-between gap-2">
+          <dt className="text-charcoal-soft">Equipment / rental</dt>
+          <dd className="tabular-nums text-charcoal">
+            {formatMoneyOrHidden(contract.equipmentCents)}
+          </dd>
         </div>
         {contract.kind === "venue" &&
         (contract.depositCents === null || contract.depositCents > 0) ? (
-          <div className="flex justify-between">
-            <dt>
+          <div className="flex justify-between gap-2">
+            <dt className="text-charcoal-soft">
               Deposit <span className="text-[10px]">(part of rental fee)</span>
             </dt>
-            <dd className="tabular-nums">{formatMoneyOrHidden(contract.depositCents)}</dd>
+            <dd className="tabular-nums text-charcoal">
+              {formatMoneyOrHidden(contract.depositCents)}
+            </dd>
           </div>
         ) : null}
-        <div className="flex justify-between border-t border-line/70 pt-1 font-medium text-ink">
-          <dt>Total</dt>
-          <dd className="tabular-nums">{formatMoneyOrHidden(contractTotalCents(contract))}</dd>
+        <div className="flex justify-between gap-2 border-t border-charcoal/30 pt-1">
+          <dt className="text-charcoal">Total</dt>
+          <dd className="tabular-nums text-charcoal">{formatMoneyOrHidden(contractTotalCents(contract))}</dd>
         </div>
       </dl>
       {/* Attached contract documents — the signed PDF or a scan of it. Names,
           sizes and who attached them only; the bytes are fetched through a
           server function that re-checks access on every request. */}
-      <div className="mt-2.5 rounded border border-line/80 bg-paper-deep/40 px-2 py-1.5">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-soft">
+      <div className="mt-3 border-t border-taupe/60 pt-2">
+        <p className="text-[10px] uppercase tracking-[0.16em] text-charcoal-soft">
           Contract document
         </p>
         {documents.length === 0 ? (
-          <p className="mt-0.5 text-[11px] text-ink-soft">
+          <p className="mt-1 text-[11.5px] leading-snug text-charcoal-soft">
             No signed contract or scan attached yet.
           </p>
         ) : (
-          <ul className="mt-1 space-y-1">
+          <ul className="mt-1.5 space-y-1.5">
             {documents.map((document) => (
               <li key={document.id} className="flex flex-wrap items-center justify-between gap-1">
-                <span className="min-w-0 break-all text-[11px] text-ink">
+                <span className="min-w-0 break-all text-[11.5px] leading-snug text-charcoal">
                   {document.filename}
-                  <span className="ml-1 text-ink-soft">
+                  <span className="ml-1 text-charcoal-soft">
                     {formatBytes(document.sizeBytes)} ·{" "}
                     {formatDate(new Date(document.createdAt).toISOString().slice(0, 10))}
                     {document.uploadedByName ? ` · ${document.uploadedByName}` : ""}
@@ -1453,14 +1598,15 @@ function ContractCard({
                     <span
                       aria-disabled="true"
                       title={PRINT_LOCKED_HINT}
-                      className="cursor-not-allowed rounded-md px-1.5 py-0.5 text-[11px] font-medium text-ink-soft/70"
+                      className="cursor-not-allowed px-1.5 py-1 text-[10.5px] uppercase tracking-[0.14em] text-charcoal-soft/70"
                     >
                       Download
                     </span>
                   ) : (
                     <Button
                       variant="ghost"
-                      className="px-1.5 py-0.5 text-[11px]"
+                      size="sm"
+                      className="px-2"
                       disabled={fileBusy}
                       onClick={() => download(document.id)}
                     >
@@ -1470,10 +1616,12 @@ function ContractCard({
                   {canEdit ? (
                     <Button
                       variant="danger"
-                      className="px-1.5 py-0.5 text-[11px]"
+                      size="sm"
+                      className="px-2"
                       disabled={fileBusy}
                       onClick={() => removeFile(document.id)}
                       title="Remove this file"
+                      aria-label="Remove this file"
                     >
                       ✕
                     </Button>
@@ -1485,7 +1633,7 @@ function ContractCard({
         )}
         {canEdit ? (
           <label
-            className={`mt-1.5 inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-line bg-white px-2 py-1 text-[11px] font-medium text-ink shadow-sm hover:bg-paper-deep ${
+            className={`mt-2 inline-flex min-h-11 cursor-pointer items-center gap-1.5 border border-taupe px-2.5 text-[10.5px] uppercase tracking-[0.14em] text-charcoal-soft transition-colors hover:border-charcoal hover:text-charcoal ${
               fileBusy ? "opacity-50" : ""
             }`}
             title={DOCUMENT_HELP}
@@ -1501,18 +1649,18 @@ function ContractCard({
           </label>
         ) : null}
         {fileError ? (
-          <p className="mt-1 rounded bg-red-50 px-1.5 py-1 text-[11px] text-red-700 ring-1 ring-red-200">
+          <p role="alert" className={`mt-1.5 ${errorClass}`}>
             {fileError}
           </p>
         ) : null}
       </div>
       {contract.contractNote ? (
-        <p className="mt-2 rounded bg-paper-deep/70 px-2 py-1.5 text-xs text-ink-soft">
+        <p className="mt-2 border-l-2 border-taupe pl-2 text-[12px] leading-snug text-charcoal-soft">
           {contract.contractNote}
         </p>
       ) : null}
       {contract.contactEmail ? (
-        <p className="mt-1.5 truncate text-xs text-brand">{contract.contactEmail}</p>
+        <p className="mt-1.5 truncate text-[11.5px] text-charcoal-soft">{contract.contactEmail}</p>
       ) : null}
       {/* Printing, the invitation letter and the agreement are reads: offered to
           the owner and the editors, and on the shared example to anyone who can
@@ -1521,24 +1669,24 @@ function ContractCard({
           `upgrade_required` (see `requireSheetReader` in `src/server/api.ts`) and
           the page must not offer a control that cannot work. */}
       {canPrint ? (
-        <div className="mt-2.5 flex flex-wrap gap-1">
+        <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-taupe/60 pt-2">
           {locked ? (
             <>
               <span
                 aria-disabled="true"
                 title={PRINT_LOCKED_HINT}
-                className="cursor-not-allowed rounded-md px-1.5 py-1 text-xs font-medium text-ink-soft/70"
+                className="cursor-not-allowed text-[10.5px] uppercase tracking-[0.14em] text-charcoal-soft/70"
               >
                 Print
               </span>
-              <span className="px-1 py-1 text-[11px] text-ink-soft">{PRINT_LOCKED_HINT}</span>
+              <span className="text-[11px] text-charcoal-soft">{PRINT_LOCKED_HINT}</span>
             </>
           ) : (
             <a
               href={`/print/contract/${String(contract.id)}`}
               target="_blank"
               rel="noreferrer"
-              className="rounded-md px-1.5 py-1 text-xs font-medium text-brand underline decoration-brand/40 hover:bg-brand-soft"
+              className="inline-flex min-h-11 items-center text-[10.5px] uppercase tracking-[0.14em] text-terracotta-ink underline decoration-terracotta/40 underline-offset-4 hover:decoration-terracotta-ink"
             >
               Print
             </a>
@@ -1548,7 +1696,7 @@ function ContractCard({
               <span
                 aria-disabled="true"
                 title={PRINT_LOCKED_HINT}
-                className="cursor-not-allowed rounded-md px-1.5 py-1 text-xs font-medium text-ink-soft/70"
+                className="cursor-not-allowed text-[10.5px] uppercase tracking-[0.14em] text-charcoal-soft/70"
               >
                 Create invitation letter
               </span>
@@ -1557,7 +1705,7 @@ function ContractCard({
                 href={`/print/letter/${String(contract.id)}`}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-md px-1.5 py-1 text-xs font-medium text-brand underline decoration-brand/40 hover:bg-brand-soft"
+                className="inline-flex min-h-11 items-center text-[10.5px] uppercase tracking-[0.14em] text-terracotta-ink underline decoration-terracotta/40 underline-offset-4 hover:decoration-terracotta-ink"
                 title="A draft letter merged from this entry — edit it, then print it. Nothing is emailed."
               >
                 Create invitation letter
@@ -1571,7 +1719,7 @@ function ContractCard({
             <span
               aria-disabled="true"
               title={PRINT_LOCKED_HINT}
-              className="cursor-not-allowed rounded-md px-1.5 py-1 text-xs font-medium text-ink-soft/70"
+              className="cursor-not-allowed text-[10.5px] uppercase tracking-[0.14em] text-charcoal-soft/70"
             >
               Generate agreement
             </span>
@@ -1580,7 +1728,7 @@ function ContractCard({
               href={`/print/agreement/${String(contract.id)}`}
               target="_blank"
               rel="noreferrer"
-              className="rounded-md px-1.5 py-1 text-xs font-medium text-brand underline decoration-brand/40 hover:bg-brand-soft"
+              className="inline-flex min-h-11 items-center text-[10.5px] uppercase tracking-[0.14em] text-terracotta-ink underline decoration-terracotta/40 underline-offset-4 hover:decoration-terracotta-ink"
               title={`A draft agreement merged from this entry — edit it, then print or save as a PDF. ${DRAFT_NOTICE}`}
             >
               Generate agreement
@@ -1599,46 +1747,53 @@ function ContractCard({
         <SignatureLinkPanel contractId={contract.id} guestName={contract.name} />
       ) : null}
       {canEdit ? (
-      <div className="mt-2.5 flex flex-wrap gap-1">
-        {previous ? (
-          <Button
-            variant="secondary"
-            className="px-2 py-1 text-xs"
-            disabled={busy}
-            onClick={() => move(previous.key)}
-            title={`Move back to ${previous.label}`}
-          >
-            ← {previous.label}
+        <div className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-2 border-t border-taupe/60 pt-2">
+          {previous ? (
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={busy}
+              onClick={() => move(previous.key)}
+              title={`Move back to ${previous.label}`}
+            >
+              ← {previous.label}
+            </Button>
+          ) : null}
+          {next ? (
+            <Button
+              size="sm"
+              disabled={busy}
+              onClick={() => move(next.key)}
+              title={`Move forward to ${next.label}`}
+            >
+              {next.label} →
+            </Button>
+          ) : null}
+          {!signed ? (
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={busy}
+              onClick={markSigned}
+              title="Mark this contract signed"
+            >
+              Mark signed
+            </Button>
+          ) : null}
+          <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>
+            Edit
           </Button>
-        ) : null}
-        {next ? (
           <Button
-            className="px-2 py-1 text-xs"
+            variant="danger"
+            size="sm"
             disabled={busy}
-            onClick={() => move(next.key)}
-            title={`Move forward to ${next.label}`}
+            onClick={remove}
+            aria-label="Delete this entry"
+            title="Delete this entry"
           >
-            {next.label} →
+            ✕
           </Button>
-        ) : null}
-        {!signed ? (
-          <Button
-            variant="secondary"
-            className="px-2 py-1 text-xs"
-            disabled={busy}
-            onClick={markSigned}
-            title="Mark this contract signed"
-          >
-            Mark signed
-          </Button>
-        ) : null}
-        <Button variant="ghost" className="px-1.5 py-1 text-xs" onClick={() => setEditing(true)}>
-          Edit
-        </Button>
-        <Button variant="danger" className="px-1.5 py-1 text-xs" disabled={busy} onClick={remove}>
-          ✕
-        </Button>
-      </div>
+        </div>
       ) : null}
     </li>
   );
@@ -1704,16 +1859,16 @@ function ContractForm({
   return (
     <form
       onSubmit={submit}
-      className={`space-y-3 ${
-        contract
-          ? "rounded-lg border border-line bg-white p-3"
-          : "rounded-xl border border-line bg-white p-5 shadow-sm"
+      className={`space-y-4 ${
+        contract ? "border border-taupe/70 bg-cream-deep/40 p-4" : "border border-taupe/70 bg-cream p-5"
       }`}
     >
       {!contract ? (
-        <h3 className="text-base font-semibold text-ink">Add a guest, supplier or venue</h3>
+        <p className="text-[10.5px] uppercase tracking-[0.18em] text-terracotta-ink">
+          Add a guest, supplier or venue
+        </p>
       ) : null}
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Name">
           <Input
             required
@@ -1829,8 +1984,12 @@ function ContractForm({
           />
         </Field>
       </div>
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
-      <div className="flex justify-end gap-2">
+      {error ? (
+        <p role="alert" className={errorClass}>
+          {error}
+        </p>
+      ) : null}
+      <div className="flex justify-end gap-2 border-t border-taupe/70 pt-4">
         <Button type="button" variant="ghost" onClick={onCancel}>
           Cancel
         </Button>

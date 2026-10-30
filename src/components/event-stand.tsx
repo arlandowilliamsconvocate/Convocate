@@ -75,29 +75,34 @@ export function EventStandPanel({
   const numbersLine = stand?.numbersLine ?? standNumbersLine(facts);
   const summary = stand?.summaryState === "ok" ? stand.summary : null;
   return (
-    <section className="rounded-xl border border-line bg-white px-4 py-3 shadow-sm">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-soft">
-        Where you stand
-      </h2>
+    <section className="border border-taupe/70 bg-cream px-5 py-4">
+      <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+        <h2 className="text-[10.5px] uppercase tracking-[0.18em] text-terracotta-ink">
+          Where you stand
+        </h2>
+        <span aria-hidden="true" className="h-[1px] flex-1 bg-taupe/70" />
+      </div>
       {shown.hasData ? (
-        <div className="mt-1.5 space-y-1.5">
+        <div className="mt-3 space-y-2.5">
           {summary ? (
-            <p className="max-w-3xl text-sm leading-relaxed text-ink">{summary}</p>
+            <p className="max-w-[68ch] text-[14.5px] leading-[1.7] text-charcoal">{summary}</p>
           ) : busy ? (
-            <p className="text-sm text-ink-soft" aria-live="polite">
+            <p className="text-[13.5px] text-charcoal-soft" aria-live="polite">
               Reading your figures…
             </p>
           ) : null}
-          <p className="text-sm font-medium text-ink">{numbersLine}</p>
+          {/* The numbers the paragraph was written from, in tabular numerals so a
+              reader can check one against the other at a glance. */}
+          <p className="text-[13.5px] leading-relaxed tabular-nums text-charcoal">{numbersLine}</p>
           {summary ? (
-            <p className="text-xs text-ink-soft">
+            <p className="text-[11.5px] leading-relaxed text-charcoal-soft">
               Written by Convocate&rsquo;s assistant from these figures only — a summary of what is
               recorded here, not advice.
             </p>
           ) : null}
         </div>
       ) : (
-        <p className="mt-1.5 text-sm text-ink-soft">{STAND_EMPTY_MESSAGE}</p>
+        <p className="mt-3 text-[13.5px] leading-relaxed text-charcoal-soft">{STAND_EMPTY_MESSAGE}</p>
       )}
     </section>
   );

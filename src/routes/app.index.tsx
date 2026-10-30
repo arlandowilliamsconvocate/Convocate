@@ -1,6 +1,17 @@
 import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { Button, Card, EmptyState, Field, Input } from "~/components/ui";
+import {
+  Button,
+  Chip,
+  EmptyState,
+  Field,
+  Input,
+  Panel,
+  SectionHead,
+  errorClass,
+  fieldHintClass,
+} from "~/components/app-ui";
+import { AppPageHead } from "~/components/app-page";
 import { formatDateRange, formatMoneyOrHidden, parseMoneyInput } from "~/lib/money";
 
 /** The conference form's fields that can be refused, named as the server names them. */
@@ -13,6 +24,15 @@ export const Route = createFileRoute("/app/")({
   component: ConferenceList,
 });
 
+/**
+ * The conference list — the first screen after signing in.
+ *
+ * One hairline row per conference rather than a grid of cards: an organizer with
+ * a dozen events a year reads a list down its money column, and the row keeps the
+ * target, the planned total and what is left of it on one line at 1440px. On a
+ * phone the row stacks — the name and its chips, then the three figures — and
+ * nothing is hidden.
+ */
 function ConferenceList() {
   const router = useRouter();
   const { conferences } = Route.useLoaderData();
@@ -24,23 +44,24 @@ function ConferenceList() {
   const hasSample = conferences.length !== own.length;
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl text-ink">Conferences</h1>
-          <p className="mt-1 text-sm text-ink-soft">
+    <div className="space-y-10">
+      <AppPageHead
+        eyebrow="Workspace"
+        title="Conferences"
+        lede={
+          <>
             {own.length === 0
               ? "Nothing on the calendar yet."
               : `${String(own.length)} conference${own.length === 1 ? "" : "s"} you can open — your own and any shared with you.`}
             {hasSample
               ? ` The example conference${own.length === 0 ? " below" : " is listed last"}, to show you what a worked conference looks like.`
               : ""}
-          </p>
-        </div>
-        {!showForm ? (
-          <Button onClick={() => setShowForm(true)}>New conference</Button>
-        ) : null}
-      </div>
+          </>
+        }
+        actions={
+          !showForm ? <Button onClick={() => setShowForm(true)}>New conference</Button> : null
+        }
+      />
 
       {showForm ? (
         <NewConferenceForm
@@ -61,7 +82,7 @@ function ConferenceList() {
           body={`Create a conference with its dates, venue and budget target. The free plan then includes one budget line, so you can see the totals work on your own numbers; the ${UPGRADE_PRICE} unlock opens unlimited budget lines, the contracts board for guests, suppliers and the venue, committee invites and printing.`}
         />
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2">
+        <ul className="border-b border-taupe/70">
           {conferences.map((conference) => {
             // Withheld amounts are `null`, and a remainder built from them is
             // `null` too — never a number assembled from parts.
@@ -71,82 +92,77 @@ function ConferenceList() {
                 : conference.budgetTargetCents - conference.plannedCents;
             const over = remaining !== null && remaining < 0;
             return (
-              <li key={conference.id}>
+              <li key={conference.id} className="border-t border-taupe/70">
                 <Link
                   to="/app/conference/$conferenceId"
                   params={{ conferenceId: String(conference.id) }}
-                  className="block h-full"
+                  className="block transition-colors hover:bg-cream-deep/50"
                 >
-                  <Card className="h-full p-5 transition hover:border-brand/40 hover:shadow-md">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <h2 className="text-lg text-ink">{conference.name}</h2>
-                        <p className="mt-0.5 text-sm text-ink-soft">
-                          {formatDateRange(conference.startDate, conference.endDate)}
-                          {conference.venue ? ` · ${conference.venue}` : ""}
-                        </p>
-                      </div>
-                      <div className="flex shrink-0 flex-col items-end gap-1">
-                        <span className="rounded-full bg-brand-soft px-2.5 py-1 text-xs font-medium text-brand">
-                          {conference.budgetLineCount} line
-                          {conference.budgetLineCount === 1 ? "" : "s"}
-                        </span>
-                        {conference.isSample ? (
-                          <span className="rounded-full bg-brand px-2.5 py-1 text-xs font-semibold text-white">
-                            {SAMPLE_BADGE}
-                          </span>
-                        ) : null}
+                  <div className="flex flex-col gap-4 px-1 py-5 sm:flex-row sm:items-start sm:justify-between sm:gap-8">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                        <h2 className="font-display text-[1.2rem] font-normal leading-tight text-charcoal">
+                          {conference.name}
+                        </h2>
+                        <Chip>{conference.budgetLineCount} line{conference.budgetLineCount === 1 ? "" : "s"}</Chip>
+                        {conference.isSample ? <Chip tone="attention">{SAMPLE_BADGE}</Chip> : null}
                         {conference.plan === "free" &&
                         !conference.isSample &&
                         !conference.adminUnlocked ? (
-                          <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-900 ring-1 ring-amber-300">
-                            Free plan · not unlocked
-                          </span>
+                          <Chip tone="flight">Free plan · not unlocked</Chip>
                         ) : null}
                         {conference.adminUnlocked && conference.role === "owner" ? (
-                          <span className="rounded-full bg-brand-soft px-2.5 py-1 text-xs font-medium text-brand ring-1 ring-brand/20">
-                            {ADMIN_PLAN_BADGE}
-                          </span>
+                          <Chip>{ADMIN_PLAN_BADGE}</Chip>
                         ) : null}
                         {conference.role !== "owner" && !conference.isSample ? (
-                          <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800 ring-1 ring-emerald-200">
-                            Shared · {conference.role === "editor" ? "Editor" : "Viewer"}
-                          </span>
+                          <Chip>Shared · {conference.role === "editor" ? "Editor" : "Viewer"}</Chip>
                         ) : null}
                       </div>
+                      <p className="mt-2 text-[12px] uppercase tracking-[0.14em] text-charcoal-soft">
+                        {formatDateRange(conference.startDate, conference.endDate)}
+                        {conference.venue ? ` · ${conference.venue}` : ""}
+                      </p>
+                      <p className="mt-1.5 text-[12.5px] text-charcoal-soft">
+                        {conference.contractCount} guest
+                        {conference.contractCount === 1 ? "" : "s"} &amp; suppliers ·{" "}
+                        {conference.contractedCount} contracted or booked ·{" "}
+                        {conference.signedCount} signed ·{" "}
+                        {formatMoneyOrHidden(conference.contractedCostCents)} contracted cost
+                      </p>
                     </div>
-                    <dl className="mt-4 grid grid-cols-3 gap-2 border-t border-line/70 pt-4 text-sm">
+                    {/* The money, right-aligned in tabular numerals so a column of
+                        conferences can be read down its last digit. */}
+                    <dl className="grid shrink-0 grid-cols-3 gap-x-6 gap-y-1 sm:w-[21rem]">
                       <div>
-                        <dt className="text-xs uppercase tracking-wide text-ink-soft">Target</dt>
-                        <dd className="font-medium text-ink">
+                        <dt className="text-[10px] uppercase tracking-[0.16em] text-charcoal-soft">
+                          Target
+                        </dt>
+                        <dd className="mt-1 text-[13.5px] tabular-nums text-charcoal">
                           {formatMoneyOrHidden(conference.budgetTargetCents)}
                         </dd>
                       </div>
                       <div>
-                        <dt className="text-xs uppercase tracking-wide text-ink-soft">Planned</dt>
-                        <dd className="font-medium text-ink">
+                        <dt className="text-[10px] uppercase tracking-[0.16em] text-charcoal-soft">
+                          Planned
+                        </dt>
+                        <dd className="mt-1 text-[13.5px] tabular-nums text-charcoal">
                           {formatMoneyOrHidden(conference.plannedCents)}
                         </dd>
                       </div>
                       <div>
-                        <dt className="text-xs uppercase tracking-wide text-ink-soft">
+                        <dt className="text-[10px] uppercase tracking-[0.16em] text-charcoal-soft">
                           {over ? "Over by" : "Unallocated"}
                         </dt>
                         <dd
-                          className={`font-medium ${over ? "text-red-700" : "text-ink"}`}
+                          className={`mt-1 text-[13.5px] tabular-nums ${
+                            over ? "text-terracotta-ink" : "text-charcoal"
+                          }`}
                         >
                           {formatMoneyOrHidden(remaining === null ? null : Math.abs(remaining))}
                         </dd>
                       </div>
                     </dl>
-                    <p className="mt-3 text-xs text-ink-soft">
-                      {conference.contractCount} guest
-                      {conference.contractCount === 1 ? "" : "s"} &amp; suppliers ·{" "}
-                      {conference.contractedCount} contracted or booked ·{" "}
-                      {conference.signedCount} signed ·{" "}
-                      {formatMoneyOrHidden(conference.contractedCostCents)} contracted cost
-                    </p>
-                  </Card>
+                  </div>
                 </Link>
               </li>
             );
@@ -160,7 +176,9 @@ function ConferenceList() {
 /** One field's refusal, printed directly under that field. */
 function FieldError({ message }: { message?: string }) {
   return message ? (
-    <span className="mt-1 block text-xs font-medium text-red-700">{message}</span>
+    <span role="alert" className={`mt-2 block ${errorClass}`}>
+      {message}
+    </span>
   ) : null;
 }
 
@@ -241,19 +259,18 @@ function NewConferenceForm({
   };
 
   return (
-    <Card className="p-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <h2 className="text-lg text-ink">New conference</h2>
-          <p className="mt-1 text-sm text-ink-soft">
-            Set the frame first — you can refine everything else later.
-          </p>
-        </div>
-        <Button variant="ghost" type="button" onClick={onDone}>
-          Cancel
-        </Button>
-      </div>
-      <form onSubmit={submit} className="mt-5 space-y-4">
+    <Panel as="section" className="p-5 sm:p-7">
+      <SectionHead
+        eyebrow="New"
+        title="Set the frame first"
+        lede="You can refine everything else later."
+        actions={
+          <Button variant="ghost" size="sm" type="button" onClick={onDone}>
+            Cancel
+          </Button>
+        }
+      />
+      <form onSubmit={submit} className="mt-6 space-y-5">
         <Field label="Conference name">
           <Input
             required
@@ -263,7 +280,7 @@ function NewConferenceForm({
           />
           <FieldError message={fieldErrors.name} />
         </Field>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-5 sm:grid-cols-2">
           <Field label="Start date">
             <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
             <FieldError message={fieldErrors.startDate} />
@@ -273,7 +290,7 @@ function NewConferenceForm({
             <FieldError message={fieldErrors.endDate} />
           </Field>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-5 sm:grid-cols-2">
           <Field label="Venue">
             <Input
               value={venue}
@@ -291,24 +308,27 @@ function NewConferenceForm({
             <FieldError message={fieldErrors.expectedAttendance} />
           </Field>
         </div>
-        <Field label="Budget target" hint="Whole currency units, e.g. 45000.">
+        <Field label="Budget target">
           <Input
             inputMode="decimal"
             value={target}
             onChange={(e) => setTarget(e.target.value)}
             placeholder="45000"
           />
+          <span className={fieldHintClass}>Whole currency units, e.g. 45000.</span>
           <FieldError message={fieldErrors.budgetTargetCents} />
         </Field>
         {error ? (
-          <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+          <p role="alert" className={errorClass}>
+            {error}
+          </p>
         ) : null}
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-3 border-t border-taupe/70 pt-5">
           <Button type="submit" disabled={busy}>
             {busy ? "Creating…" : "Create conference"}
           </Button>
         </div>
       </form>
-    </Card>
+    </Panel>
   );
 }
