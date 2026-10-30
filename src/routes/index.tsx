@@ -502,23 +502,46 @@ function Landing() {
               lede="Nothing to import and nothing to integrate. You start with the event you already have in front of you."
             />
 
-            <ol className="mt-16 grid gap-y-10 sm:grid-cols-2 sm:gap-x-10 lg:grid-cols-4">
+            {/*
+             * One column, not four across (owner, 2026-10-30): "the 4 numbers to
+             * be in a column form with an overlay box with the number."
+             *
+             * Each step is a sheet of cream paper laid on the deeper cream band,
+             * and its numeral sits in a small bordered box that straddles the
+             * card's top edge — half inside, half outside — so it reads as an
+             * overlay rather than a number set inside the padding. The column is
+             * deliberately narrow (46rem) and widely spaced: this section is
+             * meant to feel calm and deliberate, not dense.
+             *
+             * The card's top padding clears the half of the box that hangs
+             * inside it, so the numeral can never sit on the heading. The box
+             * overhang (26px) is well inside the 56–64px gap between cards, so
+             * it never touches the card above it either.
+             *
+             * The numeral is aria-hidden because the order is already carried by
+             * the <ol>; `role="list"` restates the list semantics that Tailwind's
+             * preflight strips along with the list markers (Safari/VoiceOver drop
+             * them otherwise).
+             */}
+            <ol
+              role="list"
+              className="mx-auto mt-16 flex max-w-[46rem] flex-col gap-14 sm:mt-20 sm:gap-16"
+            >
               {STEPS.map((step, index) => (
-                <li key={step.title} className="relative border-t border-taupe pt-7">
+                <li
+                  key={step.title}
+                  className="relative border border-taupe/90 bg-cream px-7 pb-8 pt-12 sm:px-10 sm:pb-10 sm:pt-14"
+                >
                   <span
                     aria-hidden="true"
-                    className="absolute -top-px left-0 h-[2px] w-8 bg-terracotta"
-                  />
-                  <span
-                    aria-hidden="true"
-                    className="font-display block text-[1.9rem] leading-none text-charcoal/70"
+                    className="absolute -top-[26px] left-6 flex h-[52px] w-[52px] items-center justify-center border border-taupe bg-cream-deep font-display text-[1.4rem] font-normal leading-none text-terracotta-ink sm:left-9"
                   >
                     {String(index + 1).padStart(2, "0")}
                   </span>
-                  <h3 className="mt-4 font-display text-[1.2rem] font-normal leading-snug text-charcoal">
+                  <h3 className="font-display text-[1.25rem] font-normal leading-snug text-charcoal">
                     {step.title}
                   </h3>
-                  <p className="mt-2.5 text-[15px] leading-[1.7] text-charcoal-soft">{step.body}</p>
+                  <p className="mt-3 text-[15px] leading-[1.75] text-charcoal-soft">{step.body}</p>
                 </li>
               ))}
             </ol>
