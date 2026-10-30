@@ -11,6 +11,7 @@ import {
   LEDE,
   META,
   Panel,
+  RowAction,
   SectionHead,
   Select,
   Textarea,
@@ -747,8 +748,9 @@ function BudgetSection({
             are separated by a hairline rather than boxed.
 
             At 390px the Category column is dropped and the category is printed
-            under the line's label instead; the row actions move into that same
-            cell. Nothing scrolls sideways and no figure is hidden.
+            under the line's label instead, the row actions move into that same
+            cell, and the two money columns fold into one that names each figure.
+            Nothing scrolls sideways and no figure is hidden.
           */}
           <div className="border-t border-charcoal">
             <table className="w-full border-collapse">
@@ -763,11 +765,17 @@ function BudgetSection({
                   <th scope="col" className={`${thClass} hidden sm:table-cell`}>
                     Category
                   </th>
-                  <th scope="col" className={`${thClass} text-right`}>
+                  <th scope="col" className={`${thClass} hidden text-right sm:table-cell`}>
                     Planned
                   </th>
-                  <th scope="col" className={`${thClass} text-right`}>
+                  <th scope="col" className={`${thClass} hidden text-right sm:table-cell`}>
                     Committed
+                  </th>
+                  {/* On a phone the two money columns fold into one cell that
+                      names its own figures; the full-width table was 29px wider
+                      than the screen and clipped the committed total. */}
+                  <th scope="col" className={`${thClass} text-right sm:hidden`}>
+                    Amounts
                   </th>
                   <th scope="col" className={`${thClass} hidden text-right sm:table-cell`}>
                     <span className="sr-only">Actions</span>
@@ -790,11 +798,31 @@ function BudgetSection({
                     </span>
                   </th>
                   <td className={`${tdClass} hidden sm:table-cell`} />
-                  <td className={`${moneyCell} text-[14px] font-medium text-charcoal`}>
+                  <td className={`${moneyCell} hidden text-[14px] font-medium text-charcoal sm:table-cell`}>
                     {formatMoneyOrHidden(plannedTotal)}
                   </td>
-                  <td className={`${moneyCell} text-[14px] font-medium text-charcoal`}>
+                  <td
+                    className={`${moneyCell} hidden text-[14px] font-medium text-charcoal sm:table-cell`}
+                  >
                     {formatMoneyOrHidden(committedTotal)}
+                  </td>
+                  <td className="px-2 py-3 text-right align-top sm:hidden">
+                    <p className="whitespace-nowrap">
+                      <span className="text-[9px] uppercase tracking-[0.14em] text-charcoal-soft">
+                        Planned
+                      </span>{" "}
+                      <span className="text-[14px] font-medium tabular-nums text-charcoal">
+                        {formatMoneyOrHidden(plannedTotal)}
+                      </span>
+                    </p>
+                    <p className="mt-0.5 whitespace-nowrap">
+                      <span className="text-[9px] uppercase tracking-[0.14em] text-charcoal-soft">
+                        Committed
+                      </span>{" "}
+                      <span className="text-[14px] font-medium tabular-nums text-charcoal">
+                        {formatMoneyOrHidden(committedTotal)}
+                      </span>
+                    </p>
                   </td>
                   <td className={`${tdClass} hidden sm:table-cell`} />
                 </tr>
@@ -838,20 +866,20 @@ function BudgetSection({
                         ({row.count} line{row.count === 1 ? "" : "s"})
                       </span>
                     </span>
-                    <span className="flex shrink-0 items-baseline gap-6 tabular-nums">
-                      <span className="w-24 text-right text-charcoal-soft">
+                    <span className="flex shrink-0 items-baseline gap-3 tabular-nums sm:gap-6">
+                      <span className="w-20 text-right text-charcoal-soft sm:w-24">
                         {formatMoneyOrHidden(row.planned)}
                       </span>
-                      <span className="w-24 text-right text-charcoal">
+                      <span className="w-20 text-right text-charcoal sm:w-24">
                         {formatMoneyOrHidden(row.committed)}
                       </span>
                     </span>
                   </li>
                 ))}
               </ul>
-              <p className="mt-1 flex justify-end gap-6 text-[10px] uppercase tracking-[0.16em] text-charcoal-soft">
-                <span className="w-24 text-right">Planned</span>
-                <span className="w-24 text-right">Committed</span>
+              <p className="mt-1 flex justify-end gap-3 text-[10px] uppercase tracking-[0.16em] text-charcoal-soft sm:gap-6">
+                <span className="w-20 text-right sm:w-24">Planned</span>
+                <span className="w-20 text-right sm:w-24">Committed</span>
               </p>
             </div>
           ) : null}
@@ -876,7 +904,9 @@ function BudgetRow({ item, canEdit }: { item: BudgetItem; canEdit: boolean }) {
   if (editing && canEdit) {
     return (
       <tr className="bg-cream-deep/60">
-        <td colSpan={5} className="p-0">
+        {/* Six columns now that the phone money cell exists, even though some
+            are hidden at a given width — a hidden cell still holds its column. */}
+        <td colSpan={6} className="p-0">
           <BudgetItemForm
             conferenceId={item.conferenceId}
             item={item}
@@ -902,38 +932,55 @@ function BudgetRow({ item, canEdit }: { item: BudgetItem; canEdit: boolean }) {
         ) : null}
         {/* The category and the row's actions, on a phone only: the Category and
             Actions columns are dropped below 640px so nothing scrolls sideways. */}
-        <p className="mt-1.5 text-[10px] uppercase tracking-[0.16em] text-charcoal-soft sm:hidden">
-          {item.category}
-        </p>
-        {canEdit ? (
-          <div className="mt-2 flex flex-wrap items-center gap-2 sm:hidden">
-            <Button size="sm" variant="secondary" onClick={() => setEditing(true)}>
-              Edit
-            </Button>
-            <Button size="sm" variant="danger" onClick={remove} disabled={busy}>
-              Delete
-            </Button>
-          </div>
-        ) : null}
+        <div className="mt-1 flex items-center gap-2 sm:hidden">
+          <span className="text-[9.5px] uppercase tracking-[0.12em] text-charcoal-soft">
+            {item.category}
+          </span>
+          {canEdit ? (
+            <span className="ml-auto flex items-center gap-1">
+              <RowAction onClick={() => setEditing(true)}>Edit</RowAction>
+              <RowAction tone="danger" onClick={remove} disabled={busy}>
+                Delete
+              </RowAction>
+            </span>
+          ) : null}
+        </div>
       </td>
       <td className={`${tdClass} hidden sm:table-cell`}>
         <span className="text-[10px] uppercase tracking-[0.16em] text-charcoal-soft">
           {item.category}
         </span>
       </td>
-      <td className={`${moneyCell} text-charcoal`}>{formatMoneyOrHidden(item.plannedCents)}</td>
-      <td className={`${moneyCell} text-charcoal-soft`}>
+      <td className={`${moneyCell} hidden text-charcoal sm:table-cell`}>
+        {formatMoneyOrHidden(item.plannedCents)}
+      </td>
+      <td className={`${moneyCell} hidden text-charcoal-soft sm:table-cell`}>
         {formatMoneyOrHidden(item.committedCents)}
+      </td>
+      {/* Phone only: both figures, each named, right of the line. */}
+      <td className="px-2 py-2 text-right align-top sm:hidden">
+        <p className="whitespace-nowrap">
+          <span className="text-[9px] uppercase tracking-[0.14em] text-charcoal-soft">
+              Planned
+            </span>{" "}
+          <span className="text-[13px] leading-tight tabular-nums text-charcoal">
+            {formatMoneyOrHidden(item.plannedCents)}
+          </span>
+        </p>
+        <p className="mt-0.5 whitespace-nowrap">
+          <span className="text-[9px] uppercase tracking-[0.14em] text-charcoal-soft">Committed</span>{" "}
+          <span className="text-[13px] leading-tight tabular-nums text-charcoal-soft">
+            {formatMoneyOrHidden(item.committedCents)}
+          </span>
+        </p>
       </td>
       <td className={`${tdClass} hidden whitespace-nowrap text-right sm:table-cell`}>
         {canEdit ? (
-          <span className="inline-flex items-center gap-1">
-            <Button size="sm" variant="ghost" onClick={() => setEditing(true)}>
-              Edit
-            </Button>
-            <Button size="sm" variant="danger" onClick={remove} disabled={busy}>
+          <span className="inline-flex items-center gap-2">
+            <RowAction onClick={() => setEditing(true)}>Edit</RowAction>
+            <RowAction tone="danger" onClick={remove} disabled={busy}>
               Delete
-            </Button>
+            </RowAction>
           </span>
         ) : (
           <span aria-hidden="true" className="text-charcoal-soft">
