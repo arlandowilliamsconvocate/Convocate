@@ -177,7 +177,7 @@ export function HelpAssistant() {
             ) : null}
 
             {problem ? (
-              <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900 ring-1 ring-amber-200">
+              <p className="mt-3 rounded-lg bg-terracotta/[0.06] px-3 py-2 text-sm text-terracotta-ink ring-1 ring-terracotta/30">
                 {problem}
               </p>
             ) : null}

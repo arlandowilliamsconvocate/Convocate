@@ -234,12 +234,12 @@ export function AgreementTermsEditor({
           </div>
 
           {error ? (
-            <p className="rounded bg-red-50 px-2 py-1 text-[11px] text-red-700 ring-1 ring-red-200">
+            <p className="rounded bg-[#8A2F22]/[0.06] px-2 py-1 text-[11px] text-[#8A2F22] ring-1 ring-[#8A2F22]/25">
               {error}
             </p>
           ) : null}
           {notice ? (
-            <p className="rounded bg-emerald-50 px-2 py-1 text-[11px] text-emerald-800 ring-1 ring-emerald-200">
+            <p className="rounded bg-sage/10 px-2 py-1 text-[11px] text-sage-ink ring-1 ring-sage/30">
               {notice}
             </p>
           ) : null}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "@tanstack/react-router";
 import { Button, Card, EmptyState, Field, Input, Select, Textarea } from "~/components/ui";
+import { SectionHead } from "~/components/app-ui";
 import {
   HIDDEN_MONEY,
   HIDDEN_MONEY_NOTE,
@@ -91,13 +92,11 @@ export function RegistrationSection({
 }) {
   if (locked || !registration) {
     return (
-      <section className="space-y-4">
-        <div>
-          <h2 className="text-xl text-ink">Registration</h2>
-          <p className="mt-0.5 text-sm text-ink-soft">
-            Take registrations for the conference and keep the attendee list here.
-          </p>
-        </div>
+      <section id="registration" className="scroll-mt-32 space-y-4">
+        <SectionHead
+          title="Registration"
+          lede="Take registrations for the conference and keep the attendee list here."
+        />
         <EmptyState
           title={locked ? "Event registration comes with the unlock" : "Registration is not available here"}
           body={locked ? REGISTRATION_LOCKED_HINT : REGISTRATION_NO_PAYMENTS_NOTE}
@@ -120,16 +119,12 @@ export function RegistrationSection({
     ticketTypes.find((ticket) => ticket.id === id)?.name || "—";
 
   return (
-    <section className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="text-xl text-ink">Registration</h2>
-          <p className="mt-0.5 text-sm text-ink-soft">
-            Who is coming, on which ticket, and what they owe. {REGISTRATION_NO_PAYMENTS_NOTE}
-          </p>
-        </div>
-        <CsvButton conferenceId={conferenceId} disabled={attendees.length === 0} />
-      </div>
+    <section id="registration" className="scroll-mt-32 space-y-6">
+      <SectionHead
+        title="Registration"
+        lede={<>Who is coming, on which ticket, and what they owe. {REGISTRATION_NO_PAYMENTS_NOTE}</>}
+        actions={<CsvButton conferenceId={conferenceId} disabled={attendees.length === 0} />}
+      />
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="p-4">
@@ -330,7 +325,7 @@ function SettingsPanel({
           </Button>
         </div>
       ) : null}
-      {error ? <p className="mt-2 text-sm text-red-700">{error}</p> : null}
+      {error ? <p className="mt-2 text-sm text-[#8A2F22]">{error}</p> : null}
     </Card>
   );
 }
@@ -562,7 +557,7 @@ function TicketTypesPanel({
           The example conference takes no changes, so its registration stays empty.
         </p>
       ) : null}
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      {error ? <p className="text-sm text-[#8A2F22]">{error}</p> : null}
     </div>
   );
 }
@@ -684,7 +679,7 @@ function TicketTypeForm({
           {busy ? "Saving…" : ticket ? "Save ticket" : "Add ticket"}
         </Button>
       </div>
-      {error ? <p className="text-sm text-red-700 sm:col-span-5">{error}</p> : null}
+      {error ? <p className="text-sm text-[#8A2F22] sm:col-span-5">{error}</p> : null}
     </form>
   );
 }
@@ -832,11 +827,11 @@ function AttendeesPanel({
                   </td>
                   <td className="px-4 py-3">
                     {isAttendeePaid(attendee.paymentStatus) ? (
-                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-900 ring-1 ring-emerald-300">
+                      <span className="rounded-full bg-sage/15 px-2 py-0.5 text-xs font-medium text-sage-ink ring-1 ring-sage/40">
                         {attendeePaymentLabel(attendee.paymentStatus)}
                       </span>
                     ) : (
-                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 ring-1 ring-amber-300">
+                      <span className="rounded-full bg-terracotta/[0.08] px-2 py-0.5 text-xs font-medium text-terracotta-ink ring-1 ring-terracotta/40">
                         {attendeePaymentLabel(attendee.paymentStatus)}
                       </span>
                     )}
@@ -904,7 +899,7 @@ function AttendeesPanel({
           </table>
         </Card>
       )}
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      {error ? <p className="text-sm text-[#8A2F22]">{error}</p> : null}
       {sample ? (
         <p className="text-xs text-ink-soft">
           The example conference takes no changes, so nothing can be added to its attendee list.
@@ -1037,7 +1032,7 @@ function AttendeeForm({
           {busy ? "Adding…" : "Add registration"}
         </Button>
       </div>
-      {error ? <p className="mt-2 text-sm text-red-700">{error}</p> : null}
+      {error ? <p className="mt-2 text-sm text-[#8A2F22]">{error}</p> : null}
     </form>
   );
 }
@@ -1093,7 +1088,7 @@ function CsvButton({ conferenceId, disabled }: { conferenceId: number; disabled:
         {busy ? "Preparing…" : "Export attendees (CSV)"}
       </Button>
       {note ? <p className="mt-1 text-xs text-ink-soft">{note}</p> : null}
-      {error ? <p className="mt-1 max-w-xs text-xs text-red-700">{error}</p> : null}
+      {error ? <p className="mt-1 max-w-xs text-xs text-[#8A2F22]">{error}</p> : null}
     </div>
   );
 }

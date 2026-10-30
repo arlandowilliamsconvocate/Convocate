@@ -132,7 +132,7 @@ export function SignatureLinkPanel({
           </p>
 
           {error ? (
-            <p role="alert" className="mt-2 rounded bg-red-50 px-2 py-1.5 text-red-800">
+            <p role="alert" className="mt-2 rounded bg-[#8A2F22]/[0.06] px-2 py-1.5 text-red-800">
               {error}
             </p>
           ) : null}
