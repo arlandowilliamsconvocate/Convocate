@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Nothing private is worth disallowing: the workspace needs a session, the
+# signing and registration links need their tokens, and an unsubscribe link is
+# already marked noindex. A robots.txt that lists them would only advertise them.
+Disallow: /app
+Disallow: /admin
+
+Sitemap: https://www.getconvocate.com/sitemap.xml

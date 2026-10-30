@@ -1,0 +1,10 @@
+== ROUTE FILES ==
+register.$token.tsx
+== ROUTE DECL ==
+1:import { Link, createFileRoute } from "@tanstack/react-router";
+37:export const Route = createFileRoute("/register/$token")({
+== ROUTETREE ==
+12
+0
+== CARD CALLS PRESENT ==
+4

@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #faf8f4;
+  --color-paper-deep: #f3efe7;
+  --color-ink: #1e1b16;
+  --color-ink-soft: #5f5a51;
+  --color-brand: #1e3a5f;
+  --color-brand-soft: #eaf0f7;
+  --color-brass: #96682d;
+  --color-line: #e3ddd2;
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+}
+
+@layer base {
+  html,
+  body {
+    @apply bg-paper text-ink antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-serif tracking-tight;
+  }
+}
+/*
+ * Print — the contract sheets (/print/contract/:id, /print/conference/:id) and
+ * the invitation letter (/print/letter/:id).
+ *
+ * What is on paper is the document and nothing else: no app chrome (those routes
+ * are outside the /app layout in the first place), no toolbar, no shadow, no
+ * colored cards, black on white. Every `.print-sheet` starts a new page, so a
+ * "print all" comes out as one contract per sheet.
+ *
+ * A4 with generous margins; a browser printing to Letter scales this down rather
+ * than clipping it, and the layout is a single column so nothing reflows badly.
+ */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 16mm 15mm;
+  }
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  /* The toolbar and anything else that is only useful on screen. */
+  .print-hide,
+  .print\:hidden {
+    display: none !important;
+  }
+  .print-sheet {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+    width: auto !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    border: 0 !important;
+    break-after: page;
+    page-break-after: always;
+  }
+  /* A trailing blank sheet is a printer's wasted page. */
+  .print-sheet:last-of-type {
+    break-after: auto;
+    page-break-after: auto;
+  }
+  .print-sheet a {
+    color: #000 !important;
+    text-decoration: none !important;
+  }
+  /* Keep a table or a heading block from splitting across two sheets. */
+  table,
+  tr,
+  h1,
+  h2,
+  h3 {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  /*
+   * A fill-in table — the notes sheet and the speaker worksheet, whose right-hand
+   * column is blank in every row — is printed so a person can write on it. Its
+   * rows are tightened in print only: at the screen's padding the speaker
+   * worksheet measured 254 mm tall, which is 7 mm more than a US Letter page
+   * leaves for text and pushed its last two rows onto a second sheet. At this
+   * padding it fits one Letter page and every line is still ~8 mm, which is a
+   * normal line to write on.
+   */
+  table[data-fill-in] th,
+  table[data-fill-in] td {
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+  }
+}
+

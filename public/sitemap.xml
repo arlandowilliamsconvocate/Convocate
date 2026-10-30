@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The public pages of getconvocate.com, for search engines.
+
+  Only pages a stranger can read without an account belong here: no /app, no
+  /admin, no signing or registration links, no unsubscribe links.
+
+  All ten /resources/<guide> pages are listed, free and paid alike, because
+  every one of them is a real readable page: the two free guides are on their
+  pages in full, and the eight paid guides open with real sections of the guide
+  before the wall, so a crawler that never fills in a form still finds text worth
+  indexing. The gate on a paid guide is a plan check, not a login — there is
+  nothing here a crawler has to sign in to see. The two free guides carry
+  priority 0.8 and the eight paid ones 0.5, which says what we would rather have
+  found first without hiding the rest.
+
+  /budget-calculator is listed at 0.9: it is the free public estimator, readable
+  and usable by a stranger with no account and no form.
+
+  The printable sheets (/print/guide/<guide>) are NOT listed: they are one-page
+  copies behind an email form, and they are marked noindex.
+
+  `lastmod` is deliberately absent rather than guessed: a date that is not the
+  real date of the last change teaches crawlers to distrust the file.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://www.getconvocate.com/</loc>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://www.getconvocate.com/resources</loc>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.getconvocate.com/budget-calculator</loc>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.getconvocate.com/resources/conference-budget-template</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.getconvocate.com/resources/vendor-contract-checklist</loc>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.getconvocate.com/resources/conference-day-timeline</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.getconvocate.com/resources/speaker-invitation-letter</loc>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.getconvocate.com/resources/speaker-contract-template</loc>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.getconvocate.com/resources/venue-site-visit-checklist</loc>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.getconvocate.com/resources/speaker-fees-and-honorariums</loc>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.getconvocate.com/resources/conference-planning-checklist</loc>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.getconvocate.com/resources/conference-committee-roles</loc>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.getconvocate.com/resources/event-refund-policy</loc>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.getconvocate.com/example</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.getconvocate.com/about</loc>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.getconvocate.com/pricing</loc>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.getconvocate.com/privacy</loc>
+    <priority>0.3</priority>
+  </url>
+</urlset>
