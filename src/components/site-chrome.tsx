@@ -80,7 +80,7 @@ function SiteNavLinksCompact({ signedIn = false }: { signedIn?: boolean }) {
   return (
     <nav
       aria-label="Site"
-      className="flex items-center gap-x-5 border-t border-taupe/70 py-1 md:hidden"
+      className="flex flex-wrap items-center gap-x-4 border-t border-taupe/70 py-1 text-[10px] md:hidden"
     >
       {PUBLIC_NAV.map((item) => (
         <Link key={item.to} to={item.to} className={navQuiet}>
@@ -92,9 +92,14 @@ function SiteNavLinksCompact({ signedIn = false }: { signedIn?: boolean }) {
           Workspace
         </Link>
       ) : (
-        <Link to="/signin" className={`${navQuiet} ml-auto`}>
-          Sign in
-        </Link>
+        <span className="ml-auto flex items-center gap-x-4">
+          <Link to="/signin" className={navQuiet}>
+            Sign in
+          </Link>
+          <Link to="/signup" className={`${navQuiet} text-terracotta-ink sm:hidden`}>
+            Create account
+          </Link>
+        </span>
       )}
     </nav>
   );
@@ -121,7 +126,9 @@ export function SiteHeader({ signedIn = false }: { signedIn?: boolean }) {
             <SiteNavLinks signedIn={signedIn} />
             {/* The compact row below needs the account action up here too, so on a
                 phone the primary action is beside the wordmark. */}
-            <div className="flex items-center gap-3 md:hidden">
+            {/* Below 640 the outlined action would collide with the wordmark, so
+                it moves into the hairline row underneath instead. */}
+            <div className="hidden items-center gap-3 sm:flex md:hidden">
               <Link to={signedIn ? "/app" : "/signup"} className={`${outlinedAction} px-4`}>
                 {signedIn ? "Workspace" : "Create account"}
               </Link>
