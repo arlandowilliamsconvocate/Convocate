@@ -30,12 +30,6 @@ export default defineConfig({
     },
   },
   plugins: [
-  },
-    },
-    tailwindcss(),
-    tsConfigPaths({
-      projects: ["./tsconfig.json"],
-    }),
     tailwindcss(),
     tsConfigPaths({
       projects: ["./tsconfig.json"],
