@@ -181,6 +181,10 @@ export function AppPageHead({
  * The conference section navigation. Anchor links only — every section stays on
  * the one page, so nothing is hidden behind a tab and the budget calculator's
  * "open the budget" link still lands on the lines it just wrote.
+ *
+ * It sticks only from `md` up. On a phone the app header is two rows (wordmark,
+ * then the destination row), so a sticky offset can only guess its height and
+ * this nav's first line ends up behind the header when the page scrolls.
  */
 export function SectionNav({
   items,
@@ -190,7 +194,7 @@ export function SectionNav({
   return (
     <nav
       aria-label="Conference sections"
-      className="print-hide sticky top-[3.6rem] z-20 -mx-5 border-y border-taupe/70 bg-cream/97 px-5 backdrop-blur-sm sm:-mx-8 sm:px-8 lg:-mx-10 lg:px-10"
+      className="print-hide z-20 -mx-5 border-y border-taupe/70 bg-cream/97 px-5 backdrop-blur-sm md:sticky md:top-[3.6rem] sm:-mx-8 sm:px-8 lg:-mx-10 lg:px-10"
     >
       <ul className="flex flex-wrap items-center gap-x-6 gap-y-0">
         {items.map((item) => (
