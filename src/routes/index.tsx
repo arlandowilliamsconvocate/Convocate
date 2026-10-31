@@ -111,7 +111,7 @@ const BUDGET_ROWS = [
 const BUDGET_TOTAL = "Three lines";
 const BUDGET_TOTAL_PLANNED = "$750";
 const BUDGET_TOTAL_COMMITTED = "$500";
-const BUDGET_UNALLOCATED = "$2,850 still unallocated against your $3,600 target.";
+const BUDGET_UNALLOCATED = "In this example, $2,850 is still unallocated against a $3,600 target.";
 
 const BUDGET_POINTS = [
   {
@@ -358,7 +358,7 @@ function Landing() {
 
               <table className="w-full border-collapse text-left tabular-nums">
                 <caption className={`pb-4 text-left ${BODY} text-charcoal-soft`}>
-                  2nd Annual Rainbow Tea, three of its budget lines
+                  An example budget, three of its lines
                 </caption>
                 <thead>
                   <tr>
@@ -559,9 +559,9 @@ function Landing() {
         {/* ---------------------------------------------------------------- */}
         <Section
           id="guides-title"
-          title="Guides you can read before you buy."
+          title="Ten guides, two of them free."
           measure="56ch"
-          lede="Ten planning guides sit under Resources. Two are free in full with no account; the other eight come with the $199 plan."
+          lede="Two you can read in full without an account, and no page asks you for an email. The other eight come with the $199 plan."
         >
           <ul role="list" className="mt-14 grid gap-10 md:grid-cols-2 md:gap-x-16">
             {GUIDES.map((guide) => (
