@@ -35,19 +35,6 @@ export const PUBLIC_NAV = [
 const navItem =
   "text-[17px] text-charcoal-soft transition-colors hover:text-charcoal [&.active]:text-charcoal";
 
-/**
- * An outlined action: a 1px rule, transparent fill, generous padding.
- *
- * Still used by the closing band of /about and /pricing, which have not been
- * through the homepage treatment yet. The homepage uses `bg-action` instead;
- * nothing here is painted with it.
- */
-const outlinedAction =
-  "inline-flex min-h-11 items-center justify-center border border-charcoal px-5 text-[17px] text-charcoal transition-colors hover:bg-charcoal hover:text-cream";
-
-const outlinedActionQuiet =
-  "inline-flex min-h-11 items-center justify-center border border-taupe px-5 text-[17px] text-charcoal-soft transition-colors hover:border-charcoal hover:text-charcoal";
-
 /** The account link: plain text, one per screen. */
 const accountLink = "text-[17px] text-terracotta-ink transition-colors hover:text-charcoal";
 
@@ -180,25 +167,5 @@ export function SiteFooter() {
         </div>
       </div>
     </footer>
-  );
-}
-
-/** The closing links at the foot of a public page: one primary, one quiet. */
-export function SitePageActions({
-  primary,
-  secondary,
-}: {
-  primary: { label: string; to: string };
-  secondary: { label: string; to: string };
-}) {
-  return (
-    <div className="mt-12 flex flex-wrap items-center gap-3">
-      <Link to={primary.to} className={outlinedAction}>
-        {primary.label}
-      </Link>
-      <Link to={secondary.to} className={outlinedActionQuiet}>
-        {secondary.label}
-      </Link>
-    </div>
   );
 }

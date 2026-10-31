@@ -35,7 +35,7 @@ export function PublicPage({
       {/* The first thing a keyboard reaches: straight past the header. */}
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-charcoal focus:px-5 focus:py-3 focus:text-[11px] focus:uppercase focus:tracking-[0.18em] focus:text-cream"
+        className="sr-only text-[17px] focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-charcoal focus:px-5 focus:py-3 focus:text-[17px] focus:text-cream"
       >
         Skip to content
       </a>
