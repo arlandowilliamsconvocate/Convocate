@@ -41,6 +41,27 @@
   --color-terracotta-ink: #8a4a2a;
   --color-sage: #7f8f79;
   --color-sage-ink: #55654f;
+  /* The fill family. `--color-terracotta` above is DECORATION ONLY — a rule, a
+     bar, a dot, the focus ring. On cream it measures 4.07:1, which clears the
+     3:1 bar for a non-text graphic and misses the 4.5:1 bar for text, so it may
+     never be painted behind a label. Anything filled that carries text uses
+     `--color-action` instead, with `--color-on-action` as its label:
+
+       --color-action         #8a4a2a   6.36:1 against --color-on-action
+       --color-action-strong  #6f3a20   8.54:1  hover / active / pressed
+       --color-action-busy    #9a5530   5.29:1  in progress, reads faded
+
+     A translucent fill (`bg-action/90`) is NOT its base colour — 90% of it over
+     cream is a lighter fill with a lower ratio — so hover states name a solid
+     token rather than an alpha. Every ratio above is computed, not remembered:
+     `bun run check:contrast` (scripts/contrast-audit.ts). The same command runs
+     `scripts/check-terracotta-fill.ts`, which fails the build if a solid
+     `bg-terracotta` lands on an element that carries text, so the failing fill
+     cannot come back by accident. */
+  --color-action: #8a4a2a;
+  --color-action-strong: #6f3a20;
+  --color-action-busy: #9a5530;
+  --color-on-action: #fbf7f0;
 
   /* Fraunces for headings on the public pages, Instrument Sans for body and UI. */
   --font-display: "Fraunces Variable", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
@@ -216,7 +237,12 @@
   --color-line: #ded3c4;
   --color-ink: #2b2724;
   --color-ink-soft: #5e564e;
-  --color-brand: #8a4a2a;
+  /* The legacy screens write their filled buttons as `bg-brand text-white`.
+     Inside the shell that has always painted terracotta ink on cream, so the
+     two names are pointed at the same value here rather than at two literals:
+     a filled surface in the app and `bg-action` are now the same colour by
+     construction, and neither can drift to the decorative `--color-terracotta`. */
+  --color-brand: var(--color-action);
   --color-brand-soft: #f5eee2;
   --color-brass: #8a4a2a;
   background-color: var(--color-cream);
