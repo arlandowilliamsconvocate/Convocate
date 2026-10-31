@@ -3,25 +3,26 @@ import { BrandLogo } from "./brand-logo";
 
 /**
  * The public shell: the header and footer shared by every page a visitor can
- * reach signed out — the landing page, /about, /pricing, /signin and /signup.
+ * reach signed out — the landing page, /about, /pricing, /resources and the
+ * sign-in and sign-up pages.
  *
  * Nothing here reads the session or the database. `signedIn` is passed in by a
  * page that already knows (only the landing page does, through its own
- * loader); /about, /pricing, /signin and /signup let it default to false, so
- * they render without any server work at all.
+ * loader); the others let it default to false, so they render without any
+ * server work at all.
+ *
+ * The look is a plain bar: the wordmark on the left, sentence-case links on the
+ * right, and one account link. No tagline strip, no tracked all-caps, no
+ * outlined button, no hairline under it — the bar is separated from the page by
+ * the page's own space and tone, not by a rule.
  *
  * The footer is mounted once, in `__root.tsx`, so every page carries it.
- *
- * The look is the warm editorial one the homepage is art-directed in: a cream
- * ground with no colour block, the wordmark on the left, uppercase navigation
- * set small with open letter-spacing, and quiet outlined actions on the right.
- * The header background is deliberately not painted — it inherits whatever the
- * page sits on — so it reads the same over cream and over the older paper
- * ground the product pages still use.
  */
 
-/** The footer line, exactly as approved. */
-export const FOOTER_LINE = "Convocate — a planning workspace for conferences and events.";
+/** The footer line: the product, one sentence, no dash and no label. */
+export const FOOTER_LINE = "Convocate is a planning workspace for conferences and events.";
+/** The same sentence after the wordmark, which is set separately. */
+const FOOTER_REST = "is a planning workspace for conferences and events.";
 
 /** The public nav items, in order. One list, so the header and footer agree. */
 export const PUBLIC_NAV = [
@@ -30,112 +31,109 @@ export const PUBLIC_NAV = [
   { label: "Pricing", to: "/pricing" },
 ] as const;
 
-/** Small caps: 11px, uppercase, open tracking — the reference's nav voice. */
+/** A nav link: sentence case, body size, no tracking. */
 const navItem =
-  "inline-flex min-h-9 items-center uppercase tracking-[0.18em] text-[11px] transition-colors hover:text-charcoal [&.active]:text-terracotta-ink";
+  "text-[17px] text-charcoal-soft transition-colors hover:text-charcoal [&.active]:text-charcoal";
 
-const navQuiet = `${navItem} text-charcoal-soft`;
-
-/** An outlined action: a 1px rule, transparent fill, generous padding. */
+/**
+ * An outlined action: a 1px rule, transparent fill, generous padding.
+ *
+ * Still used by the closing band of /about and /pricing, which have not been
+ * through the homepage treatment yet. The homepage uses `bg-action` instead;
+ * nothing here is painted with it.
+ */
 const outlinedAction =
-  "inline-flex min-h-11 items-center justify-center border border-charcoal px-5 text-[11px] uppercase tracking-[0.16em] text-charcoal transition-colors hover:bg-charcoal hover:text-cream";
+  "inline-flex min-h-11 items-center justify-center border border-charcoal px-5 text-[17px] text-charcoal transition-colors hover:bg-charcoal hover:text-cream";
 
 const outlinedActionQuiet =
-  "inline-flex min-h-11 items-center justify-center border border-taupe px-5 text-[11px] uppercase tracking-[0.16em] text-charcoal-soft transition-colors hover:border-charcoal hover:text-charcoal";
+  "inline-flex min-h-11 items-center justify-center border border-taupe px-5 text-[17px] text-charcoal-soft transition-colors hover:border-charcoal hover:text-charcoal";
 
-/** About · Pricing · Sign in · Create an account (or Open workspace when signed in). */
-export function SiteNavLinks({ signedIn = false }: { signedIn?: boolean }) {
+/** The account link: plain text, one per screen. */
+const accountLink = "text-[17px] text-terracotta-ink transition-colors hover:text-charcoal";
+
+/**
+ * Resources · About · Pricing, plus the account link. `onHome` adds the jump to
+ * the how-it-works section, which only exists on the landing page.
+ */
+export function SiteNavLinks({
+  signedIn = false,
+  onHome = false,
+}: {
+  signedIn?: boolean;
+  onHome?: boolean;
+}) {
   return (
-    <nav aria-label="Site" className="hidden items-center gap-7 md:flex">
+    <nav aria-label="Site" className="hidden items-center gap-8 md:flex">
+      {onHome && (
+        <a href="#how-it-works" className={navItem}>
+          How it works
+        </a>
+      )}
       {PUBLIC_NAV.map((item) => (
-        <Link key={item.to} to={item.to} className={navQuiet}>
+        <Link key={item.to} to={item.to} className={navItem}>
           {item.label}
         </Link>
       ))}
-      <span aria-hidden="true" className="h-4 w-px bg-taupe" />
-      {signedIn ? (
-        <Link to="/app" className={outlinedAction}>
-          Open workspace
-        </Link>
-      ) : (
-        <>
-          <Link to="/signin" className={navQuiet}>
-            Sign in
-          </Link>
-          <Link to="/signup" className={outlinedAction}>
-            Create account
-          </Link>
-        </>
-      )}
+      <Link to={signedIn ? "/app" : "/signin"} className={accountLink}>
+        {signedIn ? "Open workspace" : "Sign in"}
+      </Link>
     </nav>
   );
 }
 
 /**
- * The same navigation on a phone, as a second rule under the wordmark rather
+ * The same navigation on a phone, as a second row under the wordmark rather
  * than behind a hamburger: every destination stays one tap away, and there is
  * no script to fail.
  */
-function SiteNavLinksCompact({ signedIn = false }: { signedIn?: boolean }) {
+function SiteNavLinksCompact({
+  signedIn = false,
+  onHome = false,
+}: {
+  signedIn?: boolean;
+  onHome?: boolean;
+}) {
   return (
-    <nav
-      aria-label="Site"
-      className="flex flex-wrap items-center gap-x-4 border-t border-taupe/70 py-1 text-[10px] md:hidden"
-    >
+    <nav aria-label="Site" className="flex flex-wrap items-center gap-x-6 gap-y-1 py-1 md:hidden">
+      {onHome && (
+        <a href="#how-it-works" className={navItem}>
+          How it works
+        </a>
+      )}
       {PUBLIC_NAV.map((item) => (
-        <Link key={item.to} to={item.to} className={navQuiet}>
+        <Link key={item.to} to={item.to} className={navItem}>
           {item.label}
         </Link>
       ))}
-      {signedIn ? (
-        <Link to="/app" className={`${navQuiet} ml-auto`}>
-          Workspace
-        </Link>
-      ) : (
-        <span className="ml-auto flex items-center gap-x-4">
-          <Link to="/signin" className={navQuiet}>
-            Sign in
-          </Link>
-          <Link to="/signup" className={`${navQuiet} text-terracotta-ink sm:hidden`}>
-            Create account
-          </Link>
-        </span>
-      )}
     </nav>
   );
 }
 
 /** The public header: wordmark, then the nav. Same frame as the landing page. */
-export function SiteHeader({ signedIn = false }: { signedIn?: boolean }) {
+export function SiteHeader({
+  signedIn = false,
+  onHome = false,
+}: {
+  signedIn?: boolean;
+  onHome?: boolean;
+}) {
   return (
     <header className="print-hide">
-      <div className="mx-auto max-w-[78rem] px-6 lg:px-10">
-        <div className="flex items-center justify-between gap-4 py-4 md:py-6">
-          <Link
-            to="/"
-            aria-label="Convocate — home"
-            className="flex items-center gap-4"
-          >
+      <div className="mx-auto max-w-[74rem] px-6 lg:px-12">
+        <div className="flex items-center justify-between gap-4 py-6">
+          <Link to="/" aria-label="Convocate — home" className="flex items-center">
             <BrandLogo />
-            <span aria-hidden="true" className="hidden h-4 w-px bg-taupe lg:block" />
-            <span className="hidden uppercase tracking-[0.22em] text-charcoal-soft lg:inline text-[10px]">
-              Conference/Event planning
-            </span>
           </Link>
-          <div className="flex items-center gap-3">
-            <SiteNavLinks signedIn={signedIn} />
-            {/* The compact row below needs the account action up here too, so on a
-                phone the primary action is beside the wordmark. */}
-            {/* Below 640 the outlined action would collide with the wordmark, so
-                it moves into the hairline row underneath instead. */}
-            <div className="hidden items-center gap-3 sm:flex md:hidden">
-              <Link to={signedIn ? "/app" : "/signup"} className={`${outlinedAction} px-4`}>
-                {signedIn ? "Workspace" : "Create account"}
-              </Link>
-            </div>
+          <div className="flex items-center gap-6">
+            <SiteNavLinks signedIn={signedIn} onHome={onHome} />
+            {/* On a phone the nav moves to the row underneath; the account link
+                stays beside the wordmark so it is always one tap away. */}
+            <Link to={signedIn ? "/app" : "/signin"} className={`${accountLink} md:hidden`}>
+              {signedIn ? "Workspace" : "Sign in"}
+            </Link>
           </div>
         </div>
-        <SiteNavLinksCompact signedIn={signedIn} />
+        <SiteNavLinksCompact signedIn={signedIn} onHome={onHome} />
       </div>
     </header>
   );
@@ -144,40 +142,42 @@ export function SiteHeader({ signedIn = false }: { signedIn?: boolean }) {
 /**
  * The shared footer. Mounted once in `__root.tsx`, hidden when printing so it
  * never lands on a contract sheet or an invitation letter.
+ *
+ * A deeper cream band, so the foot of the page is a step in tone rather than a
+ * line across it.
  */
 export function SiteFooter() {
   return (
-    <footer className="print-hide border-t border-taupe/70">
-      <div className="mx-auto max-w-[78rem] px-6 lg:px-10">
-        <div className="flex flex-col gap-4 py-10 sm:flex-row sm:items-baseline sm:justify-between">
-          <p className="font-display text-[15px] text-charcoal">
-            <span className="font-display text-lg">Convocate</span>{" "}
-            <span className="text-charcoal-soft">— a planning workspace for conferences and events.</span>
+    <footer className="print-hide bg-cream-deep">
+      <div className="mx-auto max-w-[74rem] px-6 py-14 lg:px-12">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-baseline sm:justify-between">
+          <p className="max-w-[42ch] text-[17px] leading-[1.6] text-charcoal-soft">
+            <span className="font-display text-[20px] text-charcoal">Convocate</span>{" "}
+            {FOOTER_REST}
           </p>
           <nav aria-label="Footer" className="flex flex-wrap items-center gap-x-6 gap-y-2">
             {PUBLIC_NAV.map((item) => (
-              <Link key={item.to} to={item.to} className={navQuiet}>
+              <Link key={item.to} to={item.to} className={navItem}>
                 {item.label}
               </Link>
             ))}
           </nav>
         </div>
-      </div>
-      {/*
-        The copyright and trademark line. The year comes from the clock, so it
-        can never go stale, and the mark is ™ — a claim that the name is in use,
-        which is true. ® would claim a registration that has not been filed, so
-        it appears nowhere on this site.
-      */}
-      <div className="mx-auto flex max-w-[78rem] flex-wrap items-center gap-x-5 gap-y-1 border-t border-taupe/50 px-6 py-5 text-[11px] uppercase tracking-[0.14em] text-charcoal-soft lg:px-10">
-        <p>© {new Date().getFullYear()} Convocate™. All rights reserved.</p>
-        {/* One privacy link and one terms link for the whole site, next to the copyright line. */}
-        <Link to="/privacy" className={`${navItem} text-charcoal-soft`}>
-          Privacy
-        </Link>
-        <Link to="/terms" className={`${navItem} text-charcoal-soft`}>
-          Terms
-        </Link>
+        {/*
+          The copyright and trademark line. The year comes from the clock, so it
+          can never go stale, and the mark is ™ — a claim that the name is in use,
+          which is true. ® would claim a registration that has not been filed, so
+          it appears nowhere on this site.
+        */}
+        <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-[17px] text-charcoal-soft">
+          <p>© {new Date().getFullYear()} Convocate™. All rights reserved.</p>
+          <Link to="/privacy" className={navItem}>
+            Privacy
+          </Link>
+          <Link to="/terms" className={navItem}>
+            Terms
+          </Link>
+        </div>
       </div>
     </footer>
   );
