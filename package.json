@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "bun run check:contrast && vite build",
+    "check:contrast": "bun scripts/contrast-audit.ts && bun scripts/check-terracotta-fill.ts",
     "start": "bun run serve.ts",
     "publish": "bash ./publish.sh",
     "go-live": "bash ./go-live.sh",
